@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { TicketCard } from "@/components/ticket-card";
 import { CreateTicketForm } from "@/components/create-ticket-form";
+import { ApiKeyManager } from "@/components/api-key-manager";
 
 interface Ticket {
   id: string;
@@ -25,6 +26,8 @@ export default function TicketsPage() {
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [formLoading, setFormLoading] = useState(false);
   const [user, setUser] = useState<any>(null);
+  const [userApiKey, setUserApiKey] = useState<string | null>(null);
+  const [showApiDocs, setShowApiDocs] = useState(false);
 
   useEffect(() => {
     checkAuth();
@@ -168,6 +171,81 @@ export default function TicketsPage() {
           {showCreateForm ? "Cancel" : "Create New Ticket"}
         </Button>
       </div>
+
+      <Card className="p-6 mb-6">
+        <Button
+          onClick={() => setShowApiDocs(!showApiDocs)}
+          variant="outline"
+          className="w-full flex items-center justify-between"
+        >
+          <span className="flex items-center gap-2">
+            🔑 API Access & Documentation
+          </span>
+          <span className={`transform transition-transform ${showApiDocs ? 'rotate-180' : ''}`}>
+            ↓
+          </span>
+        </Button>
+
+        {showApiDocs && (
+          <div className="mt-4 space-y-4">
+            <ApiKeyManager onApiKeyChange={setUserApiKey} />
+
+            {userApiKey && (
+              <div className="p-6 bg-slate-50 border-slate-200 rounded-lg border">
+                <h3 className="text-lg font-semibold mb-4 text-slate-800">📖 API Documentation</h3>
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div>
+                    <h4 className="font-medium mb-3 text-slate-700">🔗 Endpoints</h4>
+                    <div className="space-y-2 text-sm">
+                      <div className="bg-white p-3 rounded border">
+                        <code className="text-green-600 font-semibold">GET</code> <code>/api/tickets</code>
+                        <p className="text-gray-600 mt-1">Get all your tickets</p>
+                      </div>
+                      <div className="bg-white p-3 rounded border">
+                        <code className="text-blue-600 font-semibold">POST</code> <code>/api/tickets</code>
+                        <p className="text-gray-600 mt-1">Create a new ticket</p>
+                      </div>
+                      <div className="bg-white p-3 rounded border">
+                        <code className="text-orange-600 font-semibold">PUT</code> <code>/api/tickets/[id]</code>
+                        <p className="text-gray-600 mt-1">Update a ticket</p>
+                      </div>
+                      <div className="bg-white p-3 rounded border">
+                        <code className="text-red-600 font-semibold">DELETE</code> <code>/api/tickets/[id]</code>
+                        <p className="text-gray-600 mt-1">Delete a ticket</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <h4 className="font-medium mb-3 text-slate-700">🧩 Example Usage</h4>
+                    <div className="bg-black text-green-400 p-4 rounded text-xs font-mono overflow-x-auto">
+                      <div className="mb-3">
+                        <div className="text-gray-400"># Create a ticket</div>
+                        <div>curl -X POST \</div>
+                        <div className="ml-2">-H "x-api-key: {userApiKey}" \</div>
+                        <div className="ml-2">-H "Content-Type: application/json" \</div>
+                        <div className="ml-2">-d '{`{`}</div>
+                        <div className="ml-4">"title": "Bug Report",</div>
+                        <div className="ml-4">"description": "Login issue",</div>
+                        <div className="ml-4">"email": "user@example.com",</div>
+                        <div className="ml-4">"priority": "high"</div>
+                        <div className="ml-2">{`}`}' \</div>
+                        <div className="ml-2">{typeof window !== 'undefined' ? window.location.origin : 'https://yourapp.com'}/api/tickets</div>
+                      </div>
+
+                      <div>
+                        <div className="text-gray-400"># Get all tickets</div>
+                        <div>curl -H "x-api-key: {userApiKey}" \</div>
+                        <div className="ml-2">{typeof window !== 'undefined' ? window.location.origin : 'https://yourapp.com'}/api/tickets</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </Card>
 
       {showCreateForm && (
         <CreateTicketForm
