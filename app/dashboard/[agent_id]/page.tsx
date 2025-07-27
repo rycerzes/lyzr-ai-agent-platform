@@ -4,7 +4,7 @@ import { useParams, useRouter } from "next/navigation";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { getAgentById, updateAgent, deleteAgent, updateSingleTaskAgent, getAgentVersions, getAgentVersion } from "@/lib/lyzr-api";
+import { getAgentById, updateAgent, deleteAgent, updateSingleTaskAgent, getAgentVersions, getAgentVersion, getRagConfigsByUserId } from "@/lib/lyzr-api";
 
 interface Agent {
     _id: string;
@@ -17,7 +17,11 @@ interface Agent {
     agent_context: string | null;
     agent_output: string | null;
     examples: string | null;
-    features?: string[] | null;
+    features?: Array<{
+        type: string;
+        config?: any;
+        priority?: number;
+    }> | null;
     tools?: string[] | null;
     tool_usage_description: string;
     response_format?: {
@@ -48,6 +52,28 @@ export default function AgentDetailPage() {
     const [versionsLoading, setVersionsLoading] = useState(false);
     const [showVersionHistory, setShowVersionHistory] = useState(false);
     const [versionUpdateLoading, setVersionUpdateLoading] = useState(false);
+    
+    // RAG and Knowledge Base related state
+    const [ragConfigs, setRagConfigs] = useState<any[]>([]);
+    const [ragConfigsLoading, setRagConfigsLoading] = useState(false);
+    const [showKnowledgeBaseModal, setShowKnowledgeBaseModal] = useState(false);
+
+    const fetchRagConfigs = async (apiKey: string) => {
+        setRagConfigsLoading(true);
+        try {
+            const data = await getRagConfigsByUserId(apiKey, apiKey);
+            if (data.configs && Array.isArray(data.configs)) {
+                setRagConfigs(data.configs);
+            } else {
+                setRagConfigs([]);
+            }
+        } catch (err: any) {
+            console.error("Failed to fetch RAG configs:", err);
+            setRagConfigs([]);
+        } finally {
+            setRagConfigsLoading(false);
+        }
+    };
 
     useEffect(() => {
         const fetchAgent = async () => {
@@ -71,6 +97,9 @@ export default function AgentDetailPage() {
                 const agentData = await getAgentById(apiKey, agentId);
                 setAgent(agentData);
                 setError("");
+                
+                // Fetch RAG configurations for knowledge base features
+                await fetchRagConfigs(apiKey);
             } catch (err: any) {
                 console.error("Failed to fetch agent:", err);
                 setError(err.message || "Failed to fetch agent details");
@@ -226,6 +255,117 @@ export default function AgentDetailPage() {
 
     const handleInputChange = (field: keyof Agent, value: any) => {
         setEditedAgent(prev => ({ ...prev, [field]: value }));
+    };
+
+    const getKnowledgeBaseFeatures = () => {
+        return agent?.features?.filter(feature => feature.type === 'KNOWLEDGE_BASE') || [];
+    };
+
+    const addKnowledgeBaseFeature = (ragConfig: any) => {
+        if (!agent) return;
+
+        const newFeature = {
+            type: "KNOWLEDGE_BASE",
+            config: {
+                lyzr_rag: {
+                    base_url: "https://rag-prod.studio.lyzr.ai",
+                    rag_id: ragConfig._id,
+                    rag_name: ragConfig.collection_name || ragConfig.name,
+                    params: {
+                        top_k: 5,
+                        retrieval_type: "basic",
+                        score_threshold: 0
+                    }
+                },
+                agentic_rag: []
+            },
+            priority: 0
+        };
+
+        const currentFeatures = agent.features || [];
+        const updatedFeatures = [...currentFeatures, newFeature];
+        
+        setEditedAgent(prev => ({ 
+            ...prev, 
+            features: updatedFeatures 
+        }));
+
+        // Update agent features
+        updateAgentFeatures(updatedFeatures);
+    };
+
+    const removeKnowledgeBaseFeature = (ragId: string) => {
+        if (!agent) return;
+
+        const currentFeatures = agent.features || [];
+        const updatedFeatures = currentFeatures.filter(feature => {
+            if (feature.type === 'KNOWLEDGE_BASE' && feature.config?.lyzr_rag?.rag_id === ragId) {
+                return false;
+            }
+            return true;
+        });
+
+        updateAgentFeatures(updatedFeatures);
+    };
+
+    const updateAgentFeatures = async (newFeatures: any[]) => {
+        if (!agent) return;
+
+        const agentId = params.agent_id as string;
+        const apiKey = localStorage.getItem("lyzr-api-key");
+
+        if (!apiKey) {
+            setError("API key not found");
+            return;
+        }
+
+        try {
+            // Determine if it's a single-task agent
+            const isSingleTask = agent.tools && agent.tools.length === 0;
+
+            if (isSingleTask) {
+                const singleTaskUpdateData = {
+                    name: agent.name,
+                    description: agent.description,
+                    agent_role: agent.agent_role,
+                    agent_instructions: agent.agent_instructions,
+                    examples: agent.examples || undefined,
+                    features: newFeatures,
+                    tool: agent.tools && agent.tools.length > 0 ? agent.tools[0] : undefined,
+                    tool_usage_description: agent.tool_usage_description,
+                    llm_credential_id: agent.llm_credential_id,
+                    provider_id: agent.provider_id,
+                    model: agent.model,
+                    temperature: agent.temperature,
+                    top_p: agent.top_p,
+                    response_format: agent.response_format
+                };
+
+                await updateSingleTaskAgent(apiKey, agentId, singleTaskUpdateData);
+            } else {
+                const regularUpdateData = {
+                    name: agent.name,
+                    description: agent.description,
+                    system_prompt: agent.agent_instructions,
+                    features: newFeatures,
+                    tools: agent.tools || [],
+                    llm_credential_id: agent.llm_credential_id,
+                    provider_id: agent.provider_id,
+                    model: agent.model,
+                    temperature: agent.temperature,
+                    top_p: agent.top_p,
+                    response_format: agent.response_format
+                };
+
+                await updateAgent(apiKey, agentId, regularUpdateData);
+            }
+
+            // Refresh agent data
+            const updatedAgent = await getAgentById(apiKey, agentId);
+            setAgent(updatedAgent);
+        } catch (err: any) {
+            setError(err.message || "Failed to update agent features");
+        }
     };
 
     const fetchVersionHistory = async () => {
@@ -568,7 +708,9 @@ export default function AgentDetailPage() {
                         <div>
                             <span className="font-medium">Features:</span>
                             <p className="text-sm text-gray-600 mt-1">
-                                {agent.features && agent.features.length > 0 ? agent.features.join(', ') : 'No features configured'}
+                                {agent.features && agent.features.length > 0 
+                                    ? agent.features.map(f => typeof f === 'string' ? f : f.type).join(', ') 
+                                    : 'No features configured'}
                             </p>
                         </div>
                         <div>
@@ -589,6 +731,62 @@ export default function AgentDetailPage() {
                                 {agent.managed_agents && agent.managed_agents.length > 0 ? agent.managed_agents.join(', ') : 'No managed agents'}
                             </p>
                         </div>
+                    </div>
+                </Card>
+
+                {/* Knowledge Base Features */}
+                <Card className="p-6">
+                    <div className="flex justify-between items-center mb-4">
+                        <h2 className="text-xl font-semibold">Knowledge Base Features</h2>
+                        <Button
+                            onClick={() => setShowKnowledgeBaseModal(true)}
+                            size="sm"
+                            className="bg-blue-600 hover:bg-blue-700"
+                        >
+                            + Add Knowledge Base
+                        </Button>
+                    </div>
+                    <div className="space-y-3">
+                        {getKnowledgeBaseFeatures().length > 0 ? (
+                            getKnowledgeBaseFeatures().map((feature, index) => {
+                                const ragConfig = feature.config?.lyzr_rag;
+                                return (
+                                    <div key={index} className="border rounded-lg p-4 bg-gray-50">
+                                        <div className="flex justify-between items-start">
+                                            <div className="flex-1">
+                                                <h3 className="font-medium text-lg">{ragConfig?.rag_name || 'Unknown Knowledge Base'}</h3>
+                                                <p className="text-sm text-gray-600 mt-1">
+                                                    <strong>RAG ID:</strong> {ragConfig?.rag_id}
+                                                </p>
+                                                <p className="text-sm text-gray-600">
+                                                    <strong>Base URL:</strong> {ragConfig?.base_url}
+                                                </p>
+                                                <div className="text-sm text-gray-600 mt-2">
+                                                    <strong>Parameters:</strong>
+                                                    <ul className="list-disc list-inside ml-2 mt-1">
+                                                        <li>Top K: {ragConfig?.params?.top_k || 5}</li>
+                                                        <li>Retrieval Type: {ragConfig?.params?.retrieval_type || 'basic'}</li>
+                                                        <li>Score Threshold: {ragConfig?.params?.score_threshold || 0}</li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                            <Button
+                                                onClick={() => removeKnowledgeBaseFeature(ragConfig?.rag_id)}
+                                                size="sm"
+                                                variant="destructive"
+                                                className="ml-4"
+                                            >
+                                                Remove
+                                            </Button>
+                                        </div>
+                                    </div>
+                                );
+                            })
+                        ) : (
+                            <p className="text-gray-500 text-center py-4">
+                                No knowledge base features configured. Click "Add Knowledge Base" to attach a RAG configuration.
+                            </p>
+                        )}
                     </div>
                 </Card>
 
@@ -670,6 +868,79 @@ export default function AgentDetailPage() {
                                                         {versionUpdateLoading ? "Loading..." : "Apply"}
                                                     </Button>
                                                 )}
+                                            </div>
+                                        </Card>
+                                    );
+                                })}
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
+
+            {/* Knowledge Base Selection Modal */}
+            {showKnowledgeBaseModal && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={() => setShowKnowledgeBaseModal(false)}>
+                    <div className="bg-white rounded-lg p-6 max-w-2xl w-full mx-4 max-h-96 overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex justify-between items-center mb-4">
+                            <h2 className="text-xl font-semibold">Select Knowledge Base</h2>
+                            <Button
+                                onClick={() => setShowKnowledgeBaseModal(false)}
+                                variant="outline"
+                                size="sm"
+                            >
+                                ✕
+                            </Button>
+                        </div>
+
+                        {ragConfigsLoading ? (
+                            <p className="text-gray-500 text-center py-4">Loading knowledge bases...</p>
+                        ) : ragConfigs.length === 0 ? (
+                            <p className="text-gray-500 text-center py-4">
+                                No knowledge bases available. Create a RAG configuration first from the dashboard.
+                            </p>
+                        ) : (
+                            <div className="space-y-3">
+                                <p className="text-sm text-gray-600 mb-4">
+                                    Select a knowledge base to attach to this agent. The agent will be able to use the documents in the selected knowledge base to answer questions.
+                                </p>
+                                {ragConfigs.map((ragConfig, index) => {
+                                    const isAlreadyAttached = getKnowledgeBaseFeatures().some(
+                                        feature => feature.config?.lyzr_rag?.rag_id === ragConfig._id
+                                    );
+
+                                    return (
+                                        <Card key={ragConfig._id || index} className="p-4 hover:shadow-md transition-shadow">
+                                            <div className="flex justify-between items-start">
+                                                <div className="flex-1">
+                                                    <h3 className="font-medium text-lg">{ragConfig.collection_name}</h3>
+                                                    {ragConfig.description && (
+                                                        <p className="text-sm text-gray-600 mt-1">{ragConfig.description}</p>
+                                                    )}
+                                                    <div className="text-xs text-gray-500 mt-2 space-y-1">
+                                                        <div>ID: {ragConfig._id}</div>
+                                                        <div>LLM Model: {ragConfig.llm_model}</div>
+                                                        <div>Embedding Model: {ragConfig.embedding_model}</div>
+                                                        <div>Vector Store: {ragConfig.vector_store_provider}</div>
+                                                        <div>Created: {new Date(ragConfig.created_at).toLocaleDateString()}</div>
+                                                    </div>
+                                                    {isAlreadyAttached && (
+                                                        <span className="inline-block bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full mt-2">
+                                                            Already Attached
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                <Button
+                                                    onClick={() => {
+                                                        addKnowledgeBaseFeature(ragConfig);
+                                                        setShowKnowledgeBaseModal(false);
+                                                    }}
+                                                    size="sm"
+                                                    disabled={isAlreadyAttached}
+                                                    className="ml-4"
+                                                >
+                                                    {isAlreadyAttached ? "Attached" : "Attach"}
+                                                </Button>
                                             </div>
                                         </Card>
                                     );
