@@ -79,7 +79,7 @@ export default function DashboardPage() {
         try {
             // Use the API key as the user ID
             const data = await getRagConfigsByUserId(key, key);
-            
+
             if (data.configs && Array.isArray(data.configs)) {
                 if (data.configs.length === 0) {
                     setNoRagConfigs(true);
@@ -94,7 +94,7 @@ export default function DashboardPage() {
         } finally {
             setRagLoading(false);
         }
-    };    const handleAgentCreated = () => {
+    }; const handleAgentCreated = () => {
         // Refresh the agents list after creating a new agent
         if (apiKey) {
             handleFetchAgents(apiKey);
@@ -125,7 +125,7 @@ export default function DashboardPage() {
     const handleRagConfigDeleted = (deletedConfigId: string) => {
         // Simply refresh the list since we're now fetching from API
         handleRagDeleted();
-    };    return (
+    }; return (
         <div className="flex flex-col min-h-screen p-4">
             {!apiKey ? (
                 <div className="flex items-center justify-center min-h-screen">
