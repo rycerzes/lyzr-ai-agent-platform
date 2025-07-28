@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { deleteAgent } from "@/lib/lyzr-api";
+import { ChatModal } from "@/components/chat-modal";
 
 interface Agent {
     _id?: string;
@@ -21,6 +22,7 @@ interface AgentCardProps {
 export function AgentCard({ agent, apiKey, onAgentDeleted }: AgentCardProps) {
     const router = useRouter();
     const [deleteLoading, setDeleteLoading] = useState(false);
+    const [showChatModal, setShowChatModal] = useState(false);
 
     const handleClick = () => {
         const agentId = agent._id || agent.id;
@@ -34,6 +36,13 @@ export function AgentCard({ agent, apiKey, onAgentDeleted }: AgentCardProps) {
         const agentId = agent._id || agent.id;
         if (agentId) {
             router.push(`/dashboard/${agentId}`);
+        }
+    };
+
+    const handleChat = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (apiKey) {
+            setShowChatModal(true);
         }
     };
 
@@ -89,6 +98,14 @@ export function AgentCard({ agent, apiKey, onAgentDeleted }: AgentCardProps) {
                             <Button
                                 size="sm"
                                 variant="outline"
+                                onClick={handleChat}
+                                className="text-xs bg-green-50 hover:bg-green-100 text-green-700 border-green-200"
+                            >
+                                💬 Chat
+                            </Button>
+                            <Button
+                                size="sm"
+                                variant="outline"
                                 onClick={handleEdit}
                                 className="text-xs"
                             >
@@ -107,6 +124,16 @@ export function AgentCard({ agent, apiKey, onAgentDeleted }: AgentCardProps) {
                     )}
                 </div>
             </div>
+
+            {/* Chat Modal */}
+            {apiKey && (
+                <ChatModal
+                    isOpen={showChatModal}
+                    onClose={() => setShowChatModal(false)}
+                    agent={agent}
+                    apiKey={apiKey}
+                />
+            )}
         </Card>
     );
 }
