@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { getAgentById, updateAgent, deleteAgent, updateSingleTaskAgent, getAgentVersions, getAgentVersion, getRagConfigsByUserId } from "@/lib/lyzr-api";
+import { ArrowLeft, Edit, Save, X, Trash2, History, Plus, Bot, Settings, Brain, Clock, Database, Zap } from "lucide-react";
 
 interface Agent {
     _id: string;
@@ -488,382 +489,475 @@ export default function AgentDetailPage() {
 
     if (loading) {
         return (
-            <div className="flex flex-col items-center justify-center min-h-screen p-4">
-                <Card className="w-full max-w-4xl p-6 text-center text-gray-500">
-                    <div>Loading agent details...</div>
-                </Card>
+            <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
+                <div className="flex flex-col items-center justify-center min-h-screen px-4">
+                    <div className="w-full max-w-md text-center">
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                        <div className="text-gray-600 dark:text-gray-400">Loading agent details...</div>
+                    </div>
+                </div>
             </div>
         );
     }
 
     if (error) {
         return (
-            <div className="flex flex-col items-center justify-center min-h-screen p-4">
-                <Card className="w-full max-w-4xl p-6 text-center">
-                    <div className="text-red-500 mb-4">{error}</div>
-                    <Button onClick={handleGoBack}>Go Back to Dashboard</Button>
-                </Card>
+            <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
+                <div className="flex flex-col items-center justify-center min-h-screen px-4">
+                    <Card className="w-full max-w-md p-6 text-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm">
+                        <div className="text-red-600 dark:text-red-400 mb-4 font-medium">{error}</div>
+                        <Button 
+                            onClick={handleGoBack}
+                            className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white border-0 rounded-xl"
+                        >
+                            <ArrowLeft className="h-4 w-4 mr-2" />
+                            Go Back to Dashboard
+                        </Button>
+                    </Card>
+                </div>
             </div>
         );
     }
 
     if (!agent) {
         return (
-            <div className="flex flex-col items-center justify-center min-h-screen p-4">
-                <Card className="w-full max-w-4xl p-6 text-center">
-                    <div className="text-red-500 mb-4">Agent not found</div>
-                    <Button onClick={handleGoBack}>Go Back to Dashboard</Button>
-                </Card>
+            <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
+                <div className="flex flex-col items-center justify-center min-h-screen px-4">
+                    <Card className="w-full max-w-md p-6 text-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm">
+                        <div className="text-red-600 dark:text-red-400 mb-4 font-medium">Agent not found</div>
+                        <Button 
+                            onClick={handleGoBack}
+                            className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white border-0 rounded-xl"
+                        >
+                            <ArrowLeft className="h-4 w-4 mr-2" />
+                            Go Back to Dashboard
+                        </Button>
+                    </Card>
+                </div>
             </div>
         );
     }
 
     return (
-        <div className="flex flex-col items-center justify-start min-h-screen p-4">
-            <div className="w-full max-w-4xl space-y-6">
-                {/* Header */}
-                <div className="flex items-center justify-between">
-                    <h1 className="text-3xl font-bold">{agent.name}</h1>
-                    <div className="flex gap-2">
-                        {!isEditing ? (
-                            <>
-                                <Button onClick={handleEdit} variant="outline">
-                                    ✏️ Edit
-                                </Button>
-                                <Button
-                                    onClick={fetchVersionHistory}
-                                    variant="outline"
-                                    disabled={versionsLoading}
-                                >
-                                    {versionsLoading ? "Loading..." : "📜 Version History"}
-                                </Button>
-                                <Button
-                                    onClick={handleDelete}
-                                    variant="destructive"
-                                    disabled={deleteLoading}
-                                >
-                                    {deleteLoading ? "Deleting..." : "🗑️ Delete"}
-                                </Button>
-                                <Button onClick={handleGoBack} variant="outline">
-                                    ← Back
-                                </Button>
-                            </>
-                        ) : (
-                            <>
-                                <Button
-                                    onClick={handleSaveEdit}
-                                    disabled={updateLoading}
-                                >
-                                    {updateLoading ? "Saving..." : "💾 Save"}
-                                </Button>
-                                <Button onClick={handleCancelEdit} variant="outline">
-                                    ❌ Cancel
-                                </Button>
-                            </>
-                        )}
-                    </div>
-                </div>
-
-                {/* Basic Info */}
-                <Card className="p-6">
-                    <h2 className="text-xl font-semibold mb-4">Basic Information</h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <span className="font-medium">Agent ID:</span>
-                            <p className="text-sm text-gray-600 mt-1">{agent._id}</p>
-                        </div>
-                        <div>
-                            <span className="font-medium">Name:</span>
-                            {isEditing ? (
-                                <Input
-                                    value={editedAgent.name || ""}
-                                    onChange={(e) => handleInputChange("name", e.target.value)}
-                                    className="mt-1"
-                                />
-                            ) : (
-                                <p className="text-sm text-gray-600 mt-1">{agent.name}</p>
-                            )}
-                        </div>
-                        <div>
-                            <span className="font-medium">Description:</span>
-                            {isEditing ? (
-                                <Input
-                                    value={editedAgent.description || ""}
-                                    onChange={(e) => handleInputChange("description", e.target.value)}
-                                    className="mt-1"
-                                />
-                            ) : (
-                                <p className="text-sm text-gray-600 mt-1">{agent.description || 'No description provided'}</p>
-                            )}
-                        </div>
-                        <div>
-                            <span className="font-medium">Version:</span>
-                            <p className="text-sm text-gray-600 mt-1">{agent.version}</p>
-                        </div>
-                        <div>
-                            <span className="font-medium">Provider:</span>
-                            <p className="text-sm text-gray-600 mt-1">{agent.provider_id}</p>
-                        </div>
-                    </div>
-                </Card>
-
-                {/* Agent Configuration */}
-                <Card className="p-6">
-                    <h2 className="text-xl font-semibold mb-4">Agent Configuration</h2>
-                    <div className="space-y-4">
-                        <div>
-                            <span className="font-medium">Agent Role:</span>
-                            {isEditing ? (
-                                <Input
-                                    value={editedAgent.agent_role || ""}
-                                    onChange={(e) => handleInputChange("agent_role", e.target.value)}
-                                    className="mt-1"
-                                />
-                            ) : (
-                                <p className="text-sm text-gray-600 mt-1 whitespace-pre-wrap">{agent.agent_role}</p>
-                            )}
-                        </div>
-                        <div>
-                            <span className="font-medium">Agent Instructions:</span>
-                            {isEditing ? (
-                                <textarea
-                                    value={editedAgent.agent_instructions || ""}
-                                    onChange={(e) => handleInputChange("agent_instructions", e.target.value)}
-                                    className="mt-1 w-full p-2 border border-gray-300 rounded-md resize-vertical min-h-[100px]"
-                                />
-                            ) : (
-                                <p className="text-sm text-gray-600 mt-1 whitespace-pre-wrap">{agent.agent_instructions}</p>
-                            )}
-                        </div>
-                        {agent.agent_goal && (
-                            <div>
-                                <span className="font-medium">Agent Goal:</span>
-                                <p className="text-sm text-gray-600 mt-1 whitespace-pre-wrap">{agent.agent_goal}</p>
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
+            <div className="px-4 py-8">
+                <div className="max-w-6xl mx-auto space-y-8">
+                    {/* Header */}
+                    <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700">
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center space-x-4">
+                                <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
+                                    <Bot className="h-8 w-8 text-blue-600 dark:text-blue-400" />
+                                </div>
+                                <div>
+                                    <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{agent.name}</h1>
+                                    <p className="text-gray-600 dark:text-gray-400 mt-1">Agent Details & Configuration</p>
+                                </div>
                             </div>
-                        )}
-                        {agent.agent_context && (
-                            <div>
-                                <span className="font-medium">Agent Context:</span>
-                                <p className="text-sm text-gray-600 mt-1 whitespace-pre-wrap">{agent.agent_context}</p>
+                            <div className="flex gap-2">
+                                {!isEditing ? (
+                                    <>
+                                        <Button 
+                                            onClick={handleEdit} 
+                                            variant="outline"
+                                            className="rounded-xl border-slate-200 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700"
+                                        >
+                                            <Edit className="h-4 w-4 mr-2" />
+                                            Edit
+                                        </Button>
+                                        <Button
+                                            onClick={fetchVersionHistory}
+                                            variant="outline"
+                                            disabled={versionsLoading}
+                                            className="rounded-xl border-slate-200 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700"
+                                        >
+                                            <History className="h-4 w-4 mr-2" />
+                                            {versionsLoading ? "Loading..." : "Version History"}
+                                        </Button>
+                                        <Button
+                                            onClick={handleDelete}
+                                            variant="outline"
+                                            disabled={deleteLoading}
+                                            className="rounded-xl border-red-200 text-red-600 hover:bg-red-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-900/20"
+                                        >
+                                            <Trash2 className="h-4 w-4 mr-2" />
+                                            {deleteLoading ? "Deleting..." : "Delete"}
+                                        </Button>
+                                        <Button 
+                                            onClick={handleGoBack} 
+                                            variant="outline"
+                                            className="rounded-xl border-slate-200 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700"
+                                        >
+                                            <ArrowLeft className="h-4 w-4 mr-2" />
+                                            Back
+                                        </Button>
+                                    </>
+                                ) : (
+                                    <>
+                                        <Button
+                                            onClick={handleSaveEdit}
+                                            disabled={updateLoading}
+                                            className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white border-0 rounded-xl"
+                                        >
+                                            <Save className="h-4 w-4 mr-2" />
+                                            {updateLoading ? "Saving..." : "Save"}
+                                        </Button>
+                                        <Button 
+                                            onClick={handleCancelEdit} 
+                                            variant="outline"
+                                            className="rounded-xl border-slate-200 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700"
+                                        >
+                                            <X className="h-4 w-4 mr-2" />
+                                            Cancel
+                                        </Button>
+                                    </>
+                                )}
                             </div>
-                        )}
-                    </div>
-                </Card>
-
-                {/* Model Settings */}
-                <Card className="p-6">
-                    <h2 className="text-xl font-semibold mb-4">Model Settings</h2>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div>
-                            <span className="font-medium">Model:</span>
-                            <p className="text-sm text-gray-600 mt-1">{agent.model}</p>
                         </div>
-                        <div>
-                            <span className="font-medium">Temperature:</span>
-                            {isEditing ? (
-                                <Input
-                                    type="number"
-                                    step="0.1"
-                                    min="0"
-                                    max="2"
-                                    value={editedAgent.temperature || ""}
-                                    onChange={(e) => handleInputChange("temperature", parseFloat(e.target.value))}
-                                    className="mt-1"
-                                />
-                            ) : (
-                                <p className="text-sm text-gray-600 mt-1">{agent.temperature}</p>
+                    </div>
+
+                    {/* Basic Info */}
+                    <Card className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700">
+                        <div className="flex items-center space-x-3 mb-6">
+                            <Database className="h-6 w-6 text-slate-600 dark:text-slate-400" />
+                            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Basic Information</h2>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="space-y-2">
+                                <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Agent ID</span>
+                                <p className="text-sm text-gray-900 dark:text-white font-mono bg-slate-50 dark:bg-slate-700 p-2 rounded-lg">{agent._id}</p>
+                            </div>
+                            <div className="space-y-2">
+                                <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Name</span>
+                                {isEditing ? (
+                                    <Input
+                                        value={editedAgent.name || ""}
+                                        onChange={(e) => handleInputChange("name", e.target.value)}
+                                        className="rounded-xl border-slate-200 dark:border-slate-600"
+                                    />
+                                ) : (
+                                    <p className="text-sm text-gray-900 dark:text-white p-2">{agent.name}</p>
+                                )}
+                            </div>
+                            <div className="space-y-2">
+                                <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Description</span>
+                                {isEditing ? (
+                                    <Input
+                                        value={editedAgent.description || ""}
+                                        onChange={(e) => handleInputChange("description", e.target.value)}
+                                        className="rounded-xl border-slate-200 dark:border-slate-600"
+                                    />
+                                ) : (
+                                    <p className="text-sm text-gray-900 dark:text-white p-2">{agent.description || 'No description provided'}</p>
+                                )}
+                            </div>
+                            <div className="space-y-2">
+                                <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Version</span>
+                                <p className="text-sm text-gray-900 dark:text-white p-2">{agent.version}</p>
+                            </div>
+                            <div className="space-y-2">
+                                <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Provider</span>
+                                <p className="text-sm text-gray-900 dark:text-white p-2">{agent.provider_id}</p>
+                            </div>
+                        </div>
+                    </Card>
+
+                    {/* Agent Configuration */}
+                    <Card className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700">
+                        <div className="flex items-center space-x-3 mb-6">
+                            <Bot className="h-6 w-6 text-slate-600 dark:text-slate-400" />
+                            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Agent Configuration</h2>
+                        </div>
+                        <div className="space-y-6">
+                            <div className="space-y-2">
+                                <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Agent Role</span>
+                                {isEditing ? (
+                                    <Input
+                                        value={editedAgent.agent_role || ""}
+                                        onChange={(e) => handleInputChange("agent_role", e.target.value)}
+                                        className="rounded-xl border-slate-200 dark:border-slate-600"
+                                    />
+                                ) : (
+                                    <p className="text-sm text-gray-900 dark:text-white p-3 bg-slate-50 dark:bg-slate-700 rounded-xl whitespace-pre-wrap">{agent.agent_role}</p>
+                                )}
+                            </div>
+                            <div className="space-y-2">
+                                <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Agent Instructions</span>
+                                {isEditing ? (
+                                    <textarea
+                                        value={editedAgent.agent_instructions || ""}
+                                        onChange={(e) => handleInputChange("agent_instructions", e.target.value)}
+                                        className="w-full p-3 border border-slate-200 dark:border-slate-600 rounded-xl resize-vertical min-h-[120px] bg-white dark:bg-slate-800 text-gray-900 dark:text-white"
+                                    />
+                                ) : (
+                                    <p className="text-sm text-gray-900 dark:text-white p-3 bg-slate-50 dark:bg-slate-700 rounded-xl whitespace-pre-wrap">{agent.agent_instructions}</p>
+                                )}
+                            </div>
+                            {agent.agent_goal && (
+                                <div className="space-y-2">
+                                    <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Agent Goal</span>
+                                    <p className="text-sm text-gray-900 dark:text-white p-3 bg-slate-50 dark:bg-slate-700 rounded-xl whitespace-pre-wrap">{agent.agent_goal}</p>
+                                </div>
+                            )}
+                            {agent.agent_context && (
+                                <div className="space-y-2">
+                                    <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Agent Context</span>
+                                    <p className="text-sm text-gray-900 dark:text-white p-3 bg-slate-50 dark:bg-slate-700 rounded-xl whitespace-pre-wrap">{agent.agent_context}</p>
+                                </div>
                             )}
                         </div>
-                        <div>
-                            <span className="font-medium">Top P:</span>
-                            {isEditing ? (
-                                <Input
-                                    type="number"
-                                    step="0.1"
-                                    min="0"
-                                    max="1"
-                                    value={editedAgent.top_p || ""}
-                                    onChange={(e) => handleInputChange("top_p", parseFloat(e.target.value))}
-                                    className="mt-1"
-                                />
-                            ) : (
-                                <p className="text-sm text-gray-600 mt-1">{agent.top_p}</p>
-                            )}
-                        </div>
-                        <div>
-                            <span className="font-medium">Response Format:</span>
-                            <p className="text-sm text-gray-600 mt-1">{agent.response_format?.type || 'Not specified'}</p>
-                        </div>
-                        <div>
-                            <span className="font-medium">LLM Credential ID:</span>
-                            <p className="text-sm text-gray-600 mt-1">{agent.llm_credential_id}</p>
-                        </div>
-                    </div>
-                </Card>
+                    </Card>
 
-                {/* Additional Details */}
-                <Card className="p-6">
-                    <h2 className="text-xl font-semibold mb-4">Additional Details</h2>
-                    <div className="space-y-4">
-                        <div>
-                            <span className="font-medium">Features:</span>
-                            <p className="text-sm text-gray-600 mt-1">
-                                {agent.features && agent.features.length > 0
-                                    ? agent.features.map(f => typeof f === 'string' ? f : f.type).join(', ')
-                                    : 'No features configured'}
-                            </p>
+                    {/* Model Settings */}
+                    <Card className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700">
+                        <div className="flex items-center space-x-3 mb-6">
+                            <Settings className="h-6 w-6 text-slate-600 dark:text-slate-400" />
+                            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Model Settings</h2>
                         </div>
-                        <div>
-                            <span className="font-medium">Tools:</span>
-                            <p className="text-sm text-gray-600 mt-1">
-                                {agent.tools && agent.tools.length > 0 ? agent.tools.join(', ') : 'No tools configured'}
-                            </p>
-                        </div>
-                        {agent.tool_usage_description && agent.tool_usage_description !== '{}' && (
-                            <div>
-                                <span className="font-medium">Tool Usage Description:</span>
-                                <p className="text-sm text-gray-600 mt-1">{agent.tool_usage_description}</p>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div className="space-y-2">
+                                <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Model</span>
+                                <p className="text-sm text-gray-900 dark:text-white p-2 bg-slate-50 dark:bg-slate-700 rounded-lg font-mono">{agent.model}</p>
                             </div>
-                        )}
-                        <div>
-                            <span className="font-medium">Managed Agents:</span>
-                            <p className="text-sm text-gray-600 mt-1">
-                                {agent.managed_agents && agent.managed_agents.length > 0 ? agent.managed_agents.join(', ') : 'No managed agents'}
-                            </p>
+                            <div className="space-y-2">
+                                <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Temperature</span>
+                                {isEditing ? (
+                                    <Input
+                                        type="number"
+                                        step="0.1"
+                                        min="0"
+                                        max="2"
+                                        value={editedAgent.temperature || ""}
+                                        onChange={(e) => handleInputChange("temperature", parseFloat(e.target.value))}
+                                        className="rounded-xl border-slate-200 dark:border-slate-600"
+                                    />
+                                ) : (
+                                    <p className="text-sm text-gray-900 dark:text-white p-2 bg-slate-50 dark:bg-slate-700 rounded-lg">{agent.temperature}</p>
+                                )}
+                            </div>
+                            <div className="space-y-2">
+                                <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Top P</span>
+                                {isEditing ? (
+                                    <Input
+                                        type="number"
+                                        step="0.1"
+                                        min="0"
+                                        max="1"
+                                        value={editedAgent.top_p || ""}
+                                        onChange={(e) => handleInputChange("top_p", parseFloat(e.target.value))}
+                                        className="rounded-xl border-slate-200 dark:border-slate-600"
+                                    />
+                                ) : (
+                                    <p className="text-sm text-gray-900 dark:text-white p-2 bg-slate-50 dark:bg-slate-700 rounded-lg">{agent.top_p}</p>
+                                )}
+                            </div>
+                            <div className="space-y-2">
+                                <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Response Format</span>
+                                <p className="text-sm text-gray-900 dark:text-white p-2 bg-slate-50 dark:bg-slate-700 rounded-lg">{agent.response_format?.type || 'Not specified'}</p>
+                            </div>
+                            <div className="space-y-2 md:col-span-2">
+                                <span className="text-sm font-medium text-gray-500 dark:text-gray-400">LLM Credential ID</span>
+                                <p className="text-sm text-gray-900 dark:text-white p-2 bg-slate-50 dark:bg-slate-700 rounded-lg font-mono">{agent.llm_credential_id}</p>
+                            </div>
                         </div>
-                    </div>
-                </Card>
+                    </Card>
 
-                {/* Knowledge Base Features */}
-                <Card className="p-6">
-                    <div className="flex justify-between items-center mb-4">
-                        <h2 className="text-xl font-semibold">Knowledge Base Features</h2>
-                        <Button
-                            onClick={() => setShowKnowledgeBaseModal(true)}
-                            size="sm"
-                            className="bg-blue-600 hover:bg-blue-700"
-                        >
-                            + Add Knowledge Base
-                        </Button>
-                    </div>
-                    <div className="space-y-3">
-                        {getKnowledgeBaseFeatures().length > 0 ? (
-                            getKnowledgeBaseFeatures().map((feature, index) => {
-                                const ragConfig = feature.config?.lyzr_rag;
-                                return (
-                                    <div key={index} className="border rounded-lg p-4 bg-gray-50">
-                                        <div className="flex justify-between items-start">
-                                            <div className="flex-1">
-                                                <h3 className="font-medium text-lg">{ragConfig?.rag_name || 'Unknown Knowledge Base'}</h3>
-                                                <p className="text-sm text-gray-600 mt-1">
-                                                    <strong>RAG ID:</strong> {ragConfig?.rag_id}
-                                                </p>
-                                                <p className="text-sm text-gray-600">
-                                                    <strong>Base URL:</strong> {ragConfig?.base_url}
-                                                </p>
-                                                <div className="text-sm text-gray-600 mt-2">
-                                                    <strong>Parameters:</strong>
-                                                    <ul className="list-disc list-inside ml-2 mt-1">
-                                                        <li>Top K: {ragConfig?.params?.top_k || 5}</li>
-                                                        <li>Retrieval Type: {ragConfig?.params?.retrieval_type || 'basic'}</li>
-                                                        <li>Score Threshold: {ragConfig?.params?.score_threshold || 0}</li>
-                                                    </ul>
-                                                </div>
-                                            </div>
-                                            <Button
-                                                onClick={() => removeKnowledgeBaseFeature(ragConfig?.rag_id)}
-                                                size="sm"
-                                                variant="destructive"
-                                                className="ml-4"
-                                            >
-                                                Remove
-                                            </Button>
-                                        </div>
+                    {/* Additional Details */}
+                    <Card className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700">
+                        <div className="flex items-center space-x-3 mb-6">
+                            <Zap className="h-6 w-6 text-slate-600 dark:text-slate-400" />
+                            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Additional Details</h2>
+                        </div>
+                        <div className="space-y-6">
+                            <div className="space-y-2">
+                                <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Features</span>
+                                <div className="p-3 bg-slate-50 dark:bg-slate-700 rounded-xl">
+                                    <p className="text-sm text-gray-900 dark:text-white">
+                                        {agent.features && agent.features.length > 0
+                                            ? agent.features.map(f => typeof f === 'string' ? f : f.type).join(', ')
+                                            : 'No features configured'}
+                                    </p>
+                                </div>
+                            </div>
+                            <div className="space-y-2">
+                                <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Tools</span>
+                                <div className="p-3 bg-slate-50 dark:bg-slate-700 rounded-xl">
+                                    <p className="text-sm text-gray-900 dark:text-white">
+                                        {agent.tools && agent.tools.length > 0 ? agent.tools.join(', ') : 'No tools configured'}
+                                    </p>
+                                </div>
+                            </div>
+                            {agent.tool_usage_description && agent.tool_usage_description !== '{}' && (
+                                <div className="space-y-2">
+                                    <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Tool Usage Description</span>
+                                    <div className="p-3 bg-slate-50 dark:bg-slate-700 rounded-xl">
+                                        <p className="text-sm text-gray-900 dark:text-white">{agent.tool_usage_description}</p>
                                     </div>
-                                );
-                            })
-                        ) : (
-                            <p className="text-gray-500 text-center py-4">
-                                No knowledge base features configured. Click "Add Knowledge Base" to attach a RAG configuration.
-                            </p>
-                        )}
-                    </div>
-                </Card>
+                                </div>
+                            )}
+                            <div className="space-y-2">
+                                <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Managed Agents</span>
+                                <div className="p-3 bg-slate-50 dark:bg-slate-700 rounded-xl">
+                                    <p className="text-sm text-gray-900 dark:text-white">
+                                        {agent.managed_agents && agent.managed_agents.length > 0 ? agent.managed_agents.join(', ') : 'No managed agents'}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </Card>
 
-                {/* Timestamps */}
-                <Card className="p-6">
-                    <h2 className="text-xl font-semibold mb-4">Timestamps</h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <span className="font-medium">Created At:</span>
-                            <p className="text-sm text-gray-600 mt-1">{new Date(agent.created_at).toLocaleString()}</p>
+                    {/* Knowledge Base Features */}
+                    <Card className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700">
+                        <div className="flex justify-between items-center mb-6">
+                            <div className="flex items-center space-x-3">
+                                <Brain className="h-6 w-6 text-slate-600 dark:text-slate-400" />
+                                <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Knowledge Base Features</h2>
+                            </div>
+                            <Button
+                                onClick={() => setShowKnowledgeBaseModal(true)}
+                                className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white border-0 rounded-xl"
+                            >
+                                <Plus className="h-4 w-4 mr-2" />
+                                Add Knowledge Base
+                            </Button>
                         </div>
-                        <div>
-                            <span className="font-medium">Updated At:</span>
-                            <p className="text-sm text-gray-600 mt-1">{new Date(agent.updated_at).toLocaleString()}</p>
+                        <div className="space-y-4">
+                            {getKnowledgeBaseFeatures().length > 0 ? (
+                                getKnowledgeBaseFeatures().map((feature, index) => {
+                                    const ragConfig = feature.config?.lyzr_rag;
+                                    return (
+                                        <div key={index} className="bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl p-4">
+                                            <div className="flex justify-between items-start">
+                                                <div className="flex-1">
+                                                    <h3 className="font-semibold text-lg text-gray-900 dark:text-white">{ragConfig?.rag_name || 'Unknown Knowledge Base'}</h3>
+                                                    <div className="space-y-2 mt-3">
+                                                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                                                            <strong>RAG ID:</strong> <span className="font-mono">{ragConfig?.rag_id}</span>
+                                                        </p>
+                                                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                                                            <strong>Base URL:</strong> <span className="font-mono">{ragConfig?.base_url}</span>
+                                                        </p>
+                                                        <div className="text-sm text-gray-600 dark:text-gray-400">
+                                                            <strong>Parameters:</strong>
+                                                            <div className="bg-white dark:bg-slate-800 rounded-lg p-3 mt-2 border border-slate-200 dark:border-slate-600">
+                                                                <ul className="space-y-1">
+                                                                    <li><span className="font-medium">Top K:</span> {ragConfig?.params?.top_k || 5}</li>
+                                                                    <li><span className="font-medium">Retrieval Type:</span> {ragConfig?.params?.retrieval_type || 'basic'}</li>
+                                                                    <li><span className="font-medium">Score Threshold:</span> {ragConfig?.params?.score_threshold || 0}</li>
+                                                                </ul>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <Button
+                                                    onClick={() => removeKnowledgeBaseFeature(ragConfig?.rag_id)}
+                                                    variant="outline"
+                                                    className="ml-4 rounded-xl border-red-200 text-red-600 hover:bg-red-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-900/20"
+                                                >
+                                                    Remove
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    );
+                                })
+                            ) : (
+                                <div className="text-center py-8">
+                                    <Brain className="h-12 w-12 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
+                                    <p className="text-gray-500 dark:text-gray-400">
+                                        No knowledge base features configured. Click "Add Knowledge Base" to attach a RAG configuration.
+                                    </p>
+                                </div>
+                            )}
                         </div>
-                    </div>
-                </Card>
+                    </Card>
+
+                    {/* Timestamps */}
+                    <Card className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700">
+                        <div className="flex items-center space-x-3 mb-6">
+                            <Clock className="h-6 w-6 text-slate-600 dark:text-slate-400" />
+                            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Timestamps</h2>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="space-y-2">
+                                <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Created At</span>
+                                <p className="text-sm text-gray-900 dark:text-white p-2 bg-slate-50 dark:bg-slate-700 rounded-lg font-mono">{new Date(agent.created_at).toLocaleString()}</p>
+                            </div>
+                            <div className="space-y-2">
+                                <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Updated At</span>
+                                <p className="text-sm text-gray-900 dark:text-white p-2 bg-slate-50 dark:bg-slate-700 rounded-lg font-mono">{new Date(agent.updated_at).toLocaleString()}</p>
+                            </div>
+                        </div>
+                    </Card>
+                </div>
             </div>
 
             {/* Version History Modal */}
             {showVersionHistory && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={() => setShowVersionHistory(false)}>
-                    <div className="bg-white rounded-lg p-6 max-w-2xl w-full mx-4 max-h-96 overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-                        <div className="flex justify-between items-center mb-4">
-                            <h2 className="text-xl font-semibold">Version History</h2>
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50" onClick={() => setShowVersionHistory(false)}>
+                    <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 max-w-2xl w-full mx-4 max-h-96 overflow-y-auto shadow-xl border border-slate-200 dark:border-slate-700" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex justify-between items-center mb-6">
+                            <div className="flex items-center space-x-3">
+                                <History className="h-6 w-6 text-slate-600 dark:text-slate-400" />
+                                <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Version History</h2>
+                            </div>
                             <Button
                                 onClick={() => setShowVersionHistory(false)}
                                 variant="outline"
                                 size="sm"
+                                className="rounded-xl border-slate-200 dark:border-slate-600"
                             >
-                                ✕
+                                <X className="h-4 w-4" />
                             </Button>
                         </div>
 
                         {!Array.isArray(versions) || versions.length === 0 ? (
-                            <p className="text-gray-500 text-center py-4">No version history available</p>
+                            <div className="text-center py-8">
+                                <History className="h-12 w-12 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
+                                <p className="text-gray-500 dark:text-gray-400">No version history available</p>
+                            </div>
                         ) : (
-                            <div className="space-y-3">
+                            <div className="space-y-4">
                                 {versions.map((version: any, index: number) => {
                                     const config = version.config || version;
                                     const versionId = version.version_id || version.id || index.toString();
                                     const isActive = version.active === true;
 
                                     return (
-                                        <Card key={versionId} className="p-4 hover:shadow-md transition-shadow">
+                                        <Card key={versionId} className="p-4 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl hover:shadow-md transition-all duration-200">
                                             <div className="flex justify-between items-start">
                                                 <div className="flex-1">
-                                                    <div className="flex items-center gap-2 mb-2">
-                                                        <span className="font-medium">Version {versionId.substring(0, 8)}...</span>
+                                                    <div className="flex items-center gap-2 mb-3">
+                                                        <span className="font-semibold text-gray-900 dark:text-white">Version {versionId.substring(0, 8)}...</span>
                                                         {isActive && (
-                                                            <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">Current</span>
+                                                            <span className="bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400 text-xs px-2 py-1 rounded-full font-medium">Current</span>
                                                         )}
                                                     </div>
-                                                    <p className="text-sm text-gray-600 mb-1">
-                                                        <strong>Name:</strong> {config.name || 'N/A'}
-                                                    </p>
-                                                    <p className="text-sm text-gray-600 mb-1">
-                                                        <strong>Description:</strong> {config.description || 'No description'}
-                                                    </p>
-                                                    <p className="text-sm text-gray-600 mb-1">
-                                                        <strong>Model:</strong> {config.model || 'N/A'}
-                                                    </p>
-                                                    <p className="text-sm text-gray-600 mb-1">
-                                                        <strong>Temperature:</strong> {config.temperature || 'N/A'}
-                                                    </p>
-                                                    {version.created_at && (
-                                                        <p className="text-xs text-gray-400">
-                                                            Created: {new Date(version.created_at).toLocaleString()}
+                                                    <div className="space-y-2">
+                                                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                                                            <strong>Name:</strong> {config.name || 'N/A'}
                                                         </p>
-                                                    )}
+                                                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                                                            <strong>Description:</strong> {config.description || 'No description'}
+                                                        </p>
+                                                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                                                            <strong>Model:</strong> {config.model || 'N/A'}
+                                                        </p>
+                                                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                                                            <strong>Temperature:</strong> {config.temperature || 'N/A'}
+                                                        </p>
+                                                        {version.created_at && (
+                                                            <p className="text-xs text-gray-400 dark:text-gray-500 font-mono">
+                                                                Created: {new Date(version.created_at).toLocaleString()}
+                                                            </p>
+                                                        )}
+                                                    </div>
                                                 </div>
                                                 {!isActive && (
                                                     <Button
                                                         onClick={() => handleVersionSelect(versionId)}
                                                         disabled={versionUpdateLoading}
                                                         size="sm"
-                                                        className="ml-4"
+                                                        className="ml-4 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white border-0 rounded-xl"
                                                     >
                                                         {versionUpdateLoading ? "Loading..." : "Apply"}
                                                     </Button>
@@ -880,28 +974,38 @@ export default function AgentDetailPage() {
 
             {/* Knowledge Base Selection Modal */}
             {showKnowledgeBaseModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={() => setShowKnowledgeBaseModal(false)}>
-                    <div className="bg-white rounded-lg p-6 max-w-2xl w-full mx-4 max-h-96 overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-                        <div className="flex justify-between items-center mb-4">
-                            <h2 className="text-xl font-semibold">Select Knowledge Base</h2>
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50" onClick={() => setShowKnowledgeBaseModal(false)}>
+                    <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 max-w-2xl w-full mx-4 max-h-96 overflow-y-auto shadow-xl border border-slate-200 dark:border-slate-700" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex justify-between items-center mb-6">
+                            <div className="flex items-center space-x-3">
+                                <Brain className="h-6 w-6 text-slate-600 dark:text-slate-400" />
+                                <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Select Knowledge Base</h2>
+                            </div>
                             <Button
                                 onClick={() => setShowKnowledgeBaseModal(false)}
                                 variant="outline"
                                 size="sm"
+                                className="rounded-xl border-slate-200 dark:border-slate-600"
                             >
-                                ✕
+                                <X className="h-4 w-4" />
                             </Button>
                         </div>
 
                         {ragConfigsLoading ? (
-                            <p className="text-gray-500 text-center py-4">Loading knowledge bases...</p>
+                            <div className="text-center py-8">
+                                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                                <p className="text-gray-500 dark:text-gray-400">Loading knowledge bases...</p>
+                            </div>
                         ) : ragConfigs.length === 0 ? (
-                            <p className="text-gray-500 text-center py-4">
-                                No knowledge bases available. Create a RAG configuration first from the dashboard.
-                            </p>
+                            <div className="text-center py-8">
+                                <Brain className="h-12 w-12 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
+                                <p className="text-gray-500 dark:text-gray-400">
+                                    No knowledge bases available. Create a RAG configuration first from the dashboard.
+                                </p>
+                            </div>
                         ) : (
-                            <div className="space-y-3">
-                                <p className="text-sm text-gray-600 mb-4">
+                            <div className="space-y-4">
+                                <p className="text-sm text-gray-600 dark:text-gray-400 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-200 dark:border-blue-800">
                                     Select a knowledge base to attach to this agent. The agent will be able to use the documents in the selected knowledge base to answer questions.
                                 </p>
                                 {ragConfigs.map((ragConfig, index) => {
@@ -910,22 +1014,22 @@ export default function AgentDetailPage() {
                                     );
 
                                     return (
-                                        <Card key={ragConfig._id || index} className="p-4 hover:shadow-md transition-shadow">
+                                        <Card key={ragConfig._id || index} className="p-4 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl hover:shadow-md transition-all duration-200">
                                             <div className="flex justify-between items-start">
                                                 <div className="flex-1">
-                                                    <h3 className="font-medium text-lg">{ragConfig.collection_name}</h3>
+                                                    <h3 className="font-semibold text-lg text-gray-900 dark:text-white">{ragConfig.collection_name}</h3>
                                                     {ragConfig.description && (
-                                                        <p className="text-sm text-gray-600 mt-1">{ragConfig.description}</p>
+                                                        <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{ragConfig.description}</p>
                                                     )}
-                                                    <div className="text-xs text-gray-500 mt-2 space-y-1">
-                                                        <div>ID: {ragConfig._id}</div>
-                                                        <div>LLM Model: {ragConfig.llm_model}</div>
-                                                        <div>Embedding Model: {ragConfig.embedding_model}</div>
-                                                        <div>Vector Store: {ragConfig.vector_store_provider}</div>
-                                                        <div>Created: {new Date(ragConfig.created_at).toLocaleDateString()}</div>
+                                                    <div className="text-xs text-gray-500 dark:text-gray-400 mt-3 space-y-1 bg-white dark:bg-slate-800 p-3 rounded-lg border border-slate-200 dark:border-slate-600">
+                                                        <div><strong>ID:</strong> <span className="font-mono">{ragConfig._id}</span></div>
+                                                        <div><strong>LLM Model:</strong> {ragConfig.llm_model}</div>
+                                                        <div><strong>Embedding Model:</strong> {ragConfig.embedding_model}</div>
+                                                        <div><strong>Vector Store:</strong> {ragConfig.vector_store_provider}</div>
+                                                        <div><strong>Created:</strong> {new Date(ragConfig.created_at).toLocaleDateString()}</div>
                                                     </div>
                                                     {isAlreadyAttached && (
-                                                        <span className="inline-block bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full mt-2">
+                                                        <span className="inline-block bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400 text-xs px-2 py-1 rounded-full mt-3 font-medium">
                                                             Already Attached
                                                         </span>
                                                     )}
@@ -937,7 +1041,7 @@ export default function AgentDetailPage() {
                                                     }}
                                                     size="sm"
                                                     disabled={isAlreadyAttached}
-                                                    className="ml-4"
+                                                    className="ml-4 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white border-0 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed"
                                                 >
                                                     {isAlreadyAttached ? "Attached" : "Attach"}
                                                 </Button>

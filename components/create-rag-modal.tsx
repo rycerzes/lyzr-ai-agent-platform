@@ -5,19 +5,6 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { createRagConfig } from "@/lib/lyzr-api";
 
-// Utility functions for managing RAG config IDs in localStorage (deprecated - now using API)
-const getRagConfigIds = (): string[] => {
-    return JSON.parse(localStorage.getItem("lyzr-rag-config-ids") || "[]");
-};
-
-const addRagConfigId = (configId: string): void => {
-    const ids = getRagConfigIds();
-    if (!ids.includes(configId)) {
-        ids.push(configId);
-        localStorage.setItem("lyzr-rag-config-ids", JSON.stringify(ids));
-    }
-};
-
 interface CreateRagModalProps {
     isOpen: boolean;
     onClose: () => void;

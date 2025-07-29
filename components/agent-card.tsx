@@ -48,17 +48,17 @@ export function AgentCard({ agent, apiKey, onAgentDeleted }: AgentCardProps) {
 
     const handleDelete = async (e: React.MouseEvent) => {
         e.stopPropagation();
-        
+
         if (!apiKey) {
             alert("API key not found");
             return;
         }
-        
+
         const confirmDelete = window.confirm(`Are you sure you want to delete agent "${agent.name}"? This action cannot be undone.`);
         if (!confirmDelete) return;
 
         const agentId = agent._id || agent.id;
-        
+
         if (!agentId) {
             alert("Agent ID not found");
             return;
@@ -79,50 +79,53 @@ export function AgentCard({ agent, apiKey, onAgentDeleted }: AgentCardProps) {
     };
 
     return (
-        <Card 
-            className="w-full max-w-md p-6 mb-4 cursor-pointer hover:shadow-lg transition-shadow duration-200"
+        <Card
+            className="p-4 space-y-3 cursor-pointer hover:shadow-md transition-shadow"
             onClick={handleClick}
         >
-            <div className="space-y-3">
-                <div className="font-medium text-lg">{agent.name}</div>
-                <div className="text-sm text-gray-600">{agent.description}</div>
-                <div className="text-xs text-gray-400 border-t pt-2">
-                    ID: {agent._id || agent.id}
-                </div>
-                <div className="flex justify-between items-center mt-3">
-                    <div className="text-xs text-blue-500 hover:text-blue-700">
-                        Click to view details →
+            <div className="flex justify-between items-start">
+                <div className="space-y-1 flex-1">
+                    <h3 className="font-semibold">{agent.name}</h3>
+                    <p className="text-sm text-gray-600">{agent.description}</p>
+                    <div className="text-xs text-gray-500">
+                        ID: {agent._id || agent.id}
                     </div>
-                    {apiKey && (
-                        <div className="flex gap-2">
-                            <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={handleChat}
-                                className="text-xs bg-green-50 hover:bg-green-100 text-green-700 border-green-200"
-                            >
-                                💬 Chat
-                            </Button>
-                            <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={handleEdit}
-                                className="text-xs"
-                            >
-                                ✏️ Edit
-                            </Button>
-                            <Button
-                                size="sm"
-                                variant="destructive"
-                                onClick={handleDelete}
-                                disabled={deleteLoading}
-                                className="text-xs"
-                            >
-                                {deleteLoading ? "..." : "🗑️"}
-                            </Button>
-                        </div>
-                    )}
+                    <div className="text-xs text-blue-600 mt-2">
+                        Click to view details
+                    </div>
                 </div>
+            </div>
+
+            <div className="flex gap-2">
+                {apiKey && (
+                    <>
+                        <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={handleChat}
+                            className="text-green-600 hover:text-green-700"
+                        >
+                            Chat
+                        </Button>
+                        <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={handleEdit}
+                            className="text-blue-600 hover:text-blue-700"
+                        >
+                            Edit
+                        </Button>
+                        <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={handleDelete}
+                            disabled={deleteLoading}
+                            className="text-red-600 hover:text-red-700"
+                        >
+                            {deleteLoading ? "Deleting..." : "Delete"}
+                        </Button>
+                    </>
+                )}
             </div>
 
             {/* Chat Modal */}
