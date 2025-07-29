@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { TicketCard } from "@/components/ticket-card";
 import { CreateTicketForm } from "@/components/create-ticket-form";
 import { ApiKeyManager } from "@/components/api-key-manager";
+import { Navigation } from "@/components/navigation";
 
 interface Ticket {
   id: string;
@@ -156,14 +157,16 @@ export default function TicketsPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h1 className="text-3xl font-bold">My Support Tickets</h1>
-          <p className="text-gray-600 mt-2">
-            Welcome back, {user?.name || user?.email}! Manage your support requests below.
-          </p>
-        </div>
+    <div>
+      <Navigation user={user} />
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex justify-between items-center mb-6">
+          <div>
+            <h1 className="text-3xl font-bold">My Support Tickets</h1>
+            <p className="text-gray-600 mt-2">
+              Welcome back, {user?.name || user?.email}! Manage your support requests below.
+            </p>
+          </div>
         <Button
           onClick={() => setShowCreateForm(!showCreateForm)}
           className="bg-blue-600 hover:bg-blue-700"
@@ -274,6 +277,7 @@ export default function TicketsPage() {
           ))}
         </div>
       )}
+      </div>
     </div>
   );
 }
