@@ -9,7 +9,8 @@
     "lint": "next lint",
     "auth:schema:generate": "bunx @better-auth/cli generate",
     "db:generate": "bunx drizzle-kit generate",
-    "db:migrate": "bunx drizzle-kit migrate"
+    "db:migrate": "bunx drizzle-kit migrate",
+    "db:studio": "bunx drizzle-kit studio --verbose"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.17.0",
@@ -27,6 +28,8 @@
     "pg": "^8.16.3",
     "react": "19.1.0",
     "react-dom": "19.1.0",
+    "react-markdown": "^10.1.0",
+    "remark-gfm": "^4.0.1",
     "tailwind-merge": "^3.3.1",
     "zod": "^3"
   },
