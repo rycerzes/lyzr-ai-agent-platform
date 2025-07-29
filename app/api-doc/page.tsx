@@ -14,7 +14,7 @@ export default async function ApiDocPage() {
           Complete API documentation for the ticket management system
         </p>
       </div>
-      <ReactSwagger spec={spec} />
+      <ReactSwagger spec={spec as Record<string, unknown>} />
     </section>
   );
 }

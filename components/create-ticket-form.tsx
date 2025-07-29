@@ -89,7 +89,7 @@ export function CreateTicketForm({ onSubmit, onCancel, loading }: CreateTicketFo
             className="focus:ring-blue-500"
           />
           <p className="text-xs text-gray-500 mt-1">
-            We'll use this email to contact you about your ticket
+            We&apos;ll use this email to contact you about your ticket
           </p>
         </div>
         

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { authClient } from "@/lib/auth-client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -22,20 +22,30 @@ interface Ticket {
   updatedAt: string;
 }
 
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  emailVerified: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+  image?: string | null;
+  banned?: boolean | null;
+  role?: string | null;
+  banReason?: string | null;
+  banExpires?: Date | null;
+}
+
 export default function TicketsPage() {
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [formLoading, setFormLoading] = useState(false);
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [userApiKey, setUserApiKey] = useState<string | null>(null);
   const [showApiDocs, setShowApiDocs] = useState(false);
 
-  useEffect(() => {
-    checkAuth();
-  }, []);
-
-  const checkAuth = async () => {
+  const checkAuth = useCallback(async () => {
     try {
       const session = await authClient.getSession();
       if (!session?.data?.user) {
@@ -49,7 +59,11 @@ export default function TicketsPage() {
       console.error("Auth check failed:", error);
       window.location.href = "/auth";
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    checkAuth();
+  }, [checkAuth]);
 
   const fetchTickets = async () => {
     try {
@@ -267,20 +281,20 @@ export default function TicketsPage() {
                             <div className="mb-4">
                               <div className="text-gray-400 mb-1"># Create a ticket</div>
                               <div>curl -X POST \</div>
-                              <div className="ml-2">-H "x-api-key: {userApiKey}" \</div>
-                              <div className="ml-2">-H "Content-Type: application/json" \</div>
-                              <div className="ml-2">-d '{`{`}</div>
-                              <div className="ml-4">"title": "Bug Report",</div>
-                              <div className="ml-4">"description": "Login issue",</div>
-                              <div className="ml-4">"email": "user@example.com",</div>
-                              <div className="ml-4">"priority": "high"</div>
-                              <div className="ml-2">{`}`}' \</div>
+                              <div className="ml-2">-H &quot;x-api-key: {userApiKey}&quot; \</div>
+                              <div className="ml-2">-H &quot;Content-Type: application/json&quot; \</div>
+                              <div className="ml-2">-d &apos;{`{`}</div>
+                              <div className="ml-4">&quot;title&quot;: &quot;Bug Report&quot;,</div>
+                              <div className="ml-4">&quot;description&quot;: &quot;Login issue&quot;,</div>
+                              <div className="ml-4">&quot;email&quot;: &quot;user@example.com&quot;,</div>
+                              <div className="ml-4">&quot;priority&quot;: &quot;high&quot;</div>
+                              <div className="ml-2">{`}`}&apos; \</div>
                               <div className="ml-2">{typeof window !== 'undefined' ? window.location.origin : 'https://yourapp.com'}/api/tickets</div>
                             </div>
 
                             <div>
                               <div className="text-gray-400 mb-1"># Get all tickets</div>
-                              <div>curl -H "x-api-key: {userApiKey}" \</div>
+                              <div>curl -H &quot;x-api-key: {userApiKey}&quot; \</div>
                               <div className="ml-2">{typeof window !== 'undefined' ? window.location.origin : 'https://yourapp.com'}/api/tickets</div>
                             </div>
                           </div>

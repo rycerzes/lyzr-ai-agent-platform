@@ -45,8 +45,9 @@ export default function AuthPage() {
                 type: "sign-in",
             });
             setStep("otp");
-        } catch (err: any) {
-            setError(err?.message || "Failed to send OTP");
+        } catch (err: unknown) {
+            const errorMessage = err instanceof Error ? err.message : "Failed to send OTP";
+            setError(errorMessage);
         }
         setLoading(false);
     };
@@ -66,8 +67,9 @@ export default function AuthPage() {
             } else {
                 setError(error?.message || "Invalid OTP");
             }
-        } catch (err: any) {
-            setError(err?.message || "Sign in failed");
+        } catch (err: unknown) {
+            const errorMessage = err instanceof Error ? err.message : "Sign in failed";
+            setError(errorMessage);
         }
         setLoading(false);
     };

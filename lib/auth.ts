@@ -15,7 +15,7 @@ export const auth = betterAuth({
       overrideDefaultEmailVerification: true,
       // Generate hardcoded OTP for testing
       generateOTP: () => {
-        if (process.env.NODE_ENV === "development") {
+        if (process.env.TEST_ENV === "development") {
           console.log("[TESTING] Generated hardcoded OTP: 123456");
           return "123456";
         }
@@ -24,7 +24,7 @@ export const auth = betterAuth({
       },
       async sendVerificationOTP({ email, otp, type }) {
         console.log(`Send OTP ${otp} to ${email} for ${type}`);
-        if (process.env.NODE_ENV === "development") {
+        if (process.env.TEST_ENV === "development") {
           console.log(`[TESTING] Use this OTP to verify: ${otp}`);
         }
       },

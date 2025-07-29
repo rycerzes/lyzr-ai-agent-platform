@@ -2,6 +2,38 @@
 const BASE_URL = "https://agent-prod.studio.lyzr.ai/v3";
 const RAG_BASE_URL = "https://rag-prod.studio.lyzr.ai/v3";
 
+// Base types
+export interface AgentFeature {
+  type: string;
+  config?: Record<string, unknown>;
+  priority?: number;
+}
+
+export interface ResponseFormat {
+  type: string;
+}
+
+export interface SystemPromptVariables {
+  [key: string]: string | number | boolean;
+}
+
+export interface FilterVariables {
+  [key: string]: string | number | boolean;
+}
+
+export interface MetaData {
+  [key: string]: unknown;
+}
+
+export interface ExtraInfo {
+  [key: string]: unknown;
+}
+
+export interface Document {
+  content: string;
+  metadata?: Record<string, unknown>;
+}
+
 export async function getAgents(apiKey: string) {
   const res = await fetch(`${BASE_URL}/agents/`, {
     headers: {
@@ -22,7 +54,7 @@ export interface CreateAgentRequest {
   agent_role: string;
   agent_goal?: string;
   agent_instructions: string;
-  examples?: any;
+  examples?: string;
   tool?: string;
   tool_usage_description?: string;
   provider_id: string;
@@ -30,11 +62,9 @@ export interface CreateAgentRequest {
   temperature: number;
   top_p: number;
   llm_credential_id: string;
-  features: any[];
-  managed_agents?: any[];
-  response_format?: {
-    type: string;
-  };
+  features: AgentFeature[];
+  managed_agents?: string[];
+  response_format?: ResponseFormat;
 }
 
 export interface CreateSingleTaskAgentRequest {
@@ -43,15 +73,11 @@ export interface CreateSingleTaskAgentRequest {
   agent_role: string;
   agent_instructions: string;
   examples?: string;
-  features: Array<{
-    type: string;
-    config?: any;
-    priority?: number;
-  }>;
+  features: AgentFeature[];
   tool: string;
   tool_usage_description?: string;
   llm_credential_id: string;
-  response_format?: any;
+  response_format?: ResponseFormat;
   provider_id: string;
   model: string;
   top_p: number;
@@ -62,18 +88,14 @@ export interface UpdateAgentRequest {
   name?: string;
   system_prompt?: string;
   description?: string;
-  features?: Array<{
-    type: string;
-    config?: any;
-    priority?: number;
-  }>;
+  features?: AgentFeature[];
   tools?: string[];
   llm_credential_id?: string;
   provider_id?: string;
   model?: string;
   top_p?: number;
   temperature?: number;
-  response_format?: any;
+  response_format?: ResponseFormat;
 }
 
 export interface UpdateSingleTaskAgentRequest {
@@ -82,11 +104,7 @@ export interface UpdateSingleTaskAgentRequest {
   agent_role?: string;
   agent_instructions?: string;
   examples?: string;
-  features?: Array<{
-    type: string;
-    config?: any;
-    priority?: number;
-  }>;
+  features?: AgentFeature[];
   tool?: string;
   tool_usage_description?: string;
   llm_credential_id?: string;
@@ -94,17 +112,17 @@ export interface UpdateSingleTaskAgentRequest {
   model?: string;
   top_p?: number;
   temperature?: number;
-  response_format?: any;
+  response_format?: ResponseFormat;
 }
 
 export interface ChatRequest {
   user_id: string;
-  system_prompt_variables?: any;
+  system_prompt_variables?: SystemPromptVariables;
   agent_id: string;
   session_id: string;
   message: string;
-  filter_variables?: any;
-  features?: Array<{ [key: string]: any }>;
+  filter_variables?: FilterVariables;
+  features?: Record<string, unknown>[];
   assets?: string[];
 }
 
@@ -120,7 +138,7 @@ export interface CreateRagConfigRequest {
   embedding_model: string;
   vector_store_provider: string;
   semantic_data_model?: boolean;
-  meta_data?: any;
+  meta_data?: MetaData;
 }
 
 export interface UpdateRagConfigRequest {
@@ -134,12 +152,12 @@ export interface UpdateRagConfigRequest {
   embedding_model?: string;
   vector_store_provider?: string;
   semantic_data_model?: boolean;
-  meta_data?: any;
+  meta_data?: MetaData;
 }
 
 export interface TrainDocumentRequest {
   data_parser: string;
-  extra_info?: any;
+  extra_info?: ExtraInfo;
   file: File;
 }
 
@@ -403,7 +421,7 @@ export async function deleteRagConfig(apiKey: string, configId: string) {
 // Document Training Functions
 
 // Upload parsed documents to RAG for training
-export async function uploadDocumentsToRag(apiKey: string, ragConfigId: string, documents: any[]) {
+export async function uploadDocumentsToRag(apiKey: string, ragConfigId: string, documents: Document[]) {
   const res = await fetch(`${RAG_BASE_URL}/rag/train/${ragConfigId}`, {
     method: "POST",
     headers: {
@@ -423,7 +441,7 @@ export async function uploadDocumentsToRag(apiKey: string, ragConfigId: string, 
 }
 
 // Train PDF document (parse + upload)
-export async function trainPdfDocument(apiKey: string, ragId: string, file: File, dataParser: string = 'llmsherpa', extraInfo: any = {}) {
+export async function trainPdfDocument(apiKey: string, ragId: string, file: File, dataParser: string = 'llmsherpa', extraInfo: ExtraInfo = {}) {
   // Step 1: Parse the document
   const formData = new FormData();
   formData.append('data_parser', dataParser);
@@ -458,7 +476,7 @@ export async function trainPdfDocument(apiKey: string, ragId: string, file: File
 }
 
 // Train DOCX document (parse + upload)
-export async function trainDocxDocument(apiKey: string, ragId: string, file: File, dataParser: string = 'docx2txt', extraInfo: any = {}) {
+export async function trainDocxDocument(apiKey: string, ragId: string, file: File, dataParser: string = 'docx2txt', extraInfo: ExtraInfo = {}) {
   // Step 1: Parse the document
   const formData = new FormData();
   formData.append('data_parser', dataParser);
@@ -493,7 +511,7 @@ export async function trainDocxDocument(apiKey: string, ragId: string, file: Fil
 }
 
 // Train TXT document (parse + upload)
-export async function trainTxtDocument(apiKey: string, ragId: string, file: File, dataParser: string = 'txt_parser', extraInfo: any = {}) {
+export async function trainTxtDocument(apiKey: string, ragId: string, file: File, dataParser: string = 'txt_parser', extraInfo: ExtraInfo = {}) {
   // Step 1: Parse the document
   const formData = new FormData();
   formData.append('data_parser', dataParser);

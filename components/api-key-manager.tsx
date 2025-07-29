@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
@@ -13,11 +13,7 @@ export function ApiKeyManager({ onApiKeyChange }: ApiKeyManagerProps) {
   const [loading, setLoading] = useState(false);
   const [showKey, setShowKey] = useState(false);
 
-  useEffect(() => {
-    fetchApiKey();
-  }, []);
-
-  const fetchApiKey = async () => {
+  const fetchApiKey = useCallback(async () => {
     try {
       const response = await fetch("/api/user/api-key");
       if (response.ok) {
@@ -30,7 +26,11 @@ export function ApiKeyManager({ onApiKeyChange }: ApiKeyManagerProps) {
     } catch (error) {
       console.error("Error fetching API key:", error);
     }
-  };
+  }, [onApiKeyChange]);
+
+  useEffect(() => {
+    fetchApiKey();
+  }, [fetchApiKey]);
 
   const generateNewApiKey = async () => {
     setLoading(true);

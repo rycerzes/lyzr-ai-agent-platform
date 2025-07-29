@@ -4,7 +4,7 @@ import { useParams, useRouter } from "next/navigation";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { getAgentById, updateAgent, deleteAgent, updateSingleTaskAgent, getAgentVersions, getAgentVersion, getRagConfigsByUserId } from "@/lib/lyzr-api";
+import { getAgentById, updateAgent, deleteAgent, updateSingleTaskAgent, getAgentVersions, getRagConfigsByUserId } from "@/lib/lyzr-api";
 import { ArrowLeft, Edit, Save, X, Trash2, History, Plus, Bot, Settings, Brain, Clock, Database, Zap } from "lucide-react";
 
 interface Agent {
@@ -167,7 +167,7 @@ export default function AgentDetailPage() {
                     model: agent.model,
                     temperature: editedAgent.temperature !== undefined ? editedAgent.temperature : agent.temperature,
                     top_p: editedAgent.top_p !== undefined ? editedAgent.top_p : agent.top_p,
-                    response_format: agent.response_format
+                    response_format: agent.response_format || undefined
                 };
 
                 await updateSingleTaskAgent(apiKey, agentId, singleTaskUpdateData);
@@ -184,7 +184,7 @@ export default function AgentDetailPage() {
                     model: agent.model,
                     temperature: editedAgent.temperature !== undefined ? editedAgent.temperature : agent.temperature,
                     top_p: editedAgent.top_p !== undefined ? editedAgent.top_p : agent.top_p,
-                    response_format: agent.response_format
+                    response_format: agent.response_format || undefined
                 };
 
                 await updateAgent(apiKey, agentId, regularUpdateData);
@@ -339,7 +339,7 @@ export default function AgentDetailPage() {
                     model: agent.model,
                     temperature: agent.temperature,
                     top_p: agent.top_p,
-                    response_format: agent.response_format
+                    response_format: agent.response_format || undefined
                 };
 
                 await updateSingleTaskAgent(apiKey, agentId, singleTaskUpdateData);
@@ -355,7 +355,7 @@ export default function AgentDetailPage() {
                     model: agent.model,
                     temperature: agent.temperature,
                     top_p: agent.top_p,
-                    response_format: agent.response_format
+                    response_format: agent.response_format || undefined
                 };
 
                 await updateAgent(apiKey, agentId, regularUpdateData);
@@ -452,7 +452,7 @@ export default function AgentDetailPage() {
                     model: versionData.model || agent.model,
                     temperature: versionData.temperature !== undefined ? versionData.temperature : agent.temperature,
                     top_p: versionData.top_p !== undefined ? versionData.top_p : agent.top_p,
-                    response_format: versionData.response_format || agent.response_format
+                    response_format: versionData.response_format || agent.response_format || undefined
                 };
 
                 await updateSingleTaskAgent(apiKey, agent._id, singleTaskUpdateData);
@@ -469,7 +469,7 @@ export default function AgentDetailPage() {
                     model: versionData.model || agent.model,
                     temperature: versionData.temperature !== undefined ? versionData.temperature : agent.temperature,
                     top_p: versionData.top_p !== undefined ? versionData.top_p : agent.top_p,
-                    response_format: versionData.response_format || agent.response_format
+                    response_format: versionData.response_format || agent.response_format || undefined
                 };
 
                 await updateAgent(apiKey, agent._id, regularUpdateData);
@@ -506,7 +506,7 @@ export default function AgentDetailPage() {
                 <div className="flex flex-col items-center justify-center min-h-screen px-4">
                     <Card className="w-full max-w-md p-6 text-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm">
                         <div className="text-red-600 dark:text-red-400 mb-4 font-medium">{error}</div>
-                        <Button 
+                        <Button
                             onClick={handleGoBack}
                             className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white border-0 rounded-xl"
                         >
@@ -525,7 +525,7 @@ export default function AgentDetailPage() {
                 <div className="flex flex-col items-center justify-center min-h-screen px-4">
                     <Card className="w-full max-w-md p-6 text-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm">
                         <div className="text-red-600 dark:text-red-400 mb-4 font-medium">Agent not found</div>
-                        <Button 
+                        <Button
                             onClick={handleGoBack}
                             className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white border-0 rounded-xl"
                         >
@@ -557,8 +557,8 @@ export default function AgentDetailPage() {
                             <div className="flex gap-2">
                                 {!isEditing ? (
                                     <>
-                                        <Button 
-                                            onClick={handleEdit} 
+                                        <Button
+                                            onClick={handleEdit}
                                             variant="outline"
                                             className="rounded-xl border-slate-200 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700"
                                         >
@@ -583,8 +583,8 @@ export default function AgentDetailPage() {
                                             <Trash2 className="h-4 w-4 mr-2" />
                                             {deleteLoading ? "Deleting..." : "Delete"}
                                         </Button>
-                                        <Button 
-                                            onClick={handleGoBack} 
+                                        <Button
+                                            onClick={handleGoBack}
                                             variant="outline"
                                             className="rounded-xl border-slate-200 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700"
                                         >
@@ -602,8 +602,8 @@ export default function AgentDetailPage() {
                                             <Save className="h-4 w-4 mr-2" />
                                             {updateLoading ? "Saving..." : "Save"}
                                         </Button>
-                                        <Button 
-                                            onClick={handleCancelEdit} 
+                                        <Button
+                                            onClick={handleCancelEdit}
                                             variant="outline"
                                             className="rounded-xl border-slate-200 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700"
                                         >

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { authClient } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -41,7 +41,7 @@ export function AdminDashboard() {
   });
   const [showCreateUser, setShowCreateUser] = useState(false);
 
-  const fetchUsers = async () => {
+  const fetchUsers = useCallback(async () => {
     setLoading(true);
     try {
       const response = await authClient.admin.listUsers({
@@ -63,11 +63,11 @@ export function AdminDashboard() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [searchValue, searchField, limit, offset]);
 
   useEffect(() => {
     fetchUsers();
-  }, [searchValue, searchField, limit, offset]);
+  }, [fetchUsers]);
 
   const handleCreateUser = async () => {
     try {

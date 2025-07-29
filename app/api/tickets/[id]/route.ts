@@ -145,7 +145,7 @@ async function authenticateUser(request: NextRequest) {
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const authResult = await authenticateUser(request);
@@ -155,12 +155,13 @@ export async function GET(
     }
 
     const { user: authenticatedUser, isApiAuth } = authResult;
+    const { id } = await params;
 
     // Fetch ticket only if it belongs to the authenticated user
     const userTicket = await db
       .select()
       .from(ticket)
-      .where(and(eq(ticket.id, params.id), eq(ticket.userId, authenticatedUser.id)))
+      .where(and(eq(ticket.id, id), eq(ticket.userId, authenticatedUser.id)))
       .limit(1);
 
     if (userTicket.length === 0) {
@@ -297,7 +298,7 @@ export async function GET(
  */
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const authResult = await authenticateUser(request);
@@ -307,6 +308,7 @@ export async function PUT(
     }
 
     const { user: authenticatedUser, isApiAuth } = authResult;
+    const { id } = await params;
 
     const body = await request.json();
     const { title, description, email, phone, status, priority } = body;
@@ -323,7 +325,7 @@ export async function PUT(
         ...(priority && { priority }),
         updatedAt: new Date(),
       })
-      .where(and(eq(ticket.id, params.id), eq(ticket.userId, authenticatedUser.id)))
+      .where(and(eq(ticket.id, id), eq(ticket.userId, authenticatedUser.id)))
       .returning();
 
     if (updatedTicket.length === 0) {
@@ -432,7 +434,7 @@ export async function PUT(
  */
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const authResult = await authenticateUser(request);
@@ -442,11 +444,12 @@ export async function DELETE(
     }
 
     const { user: authenticatedUser, isApiAuth } = authResult;
+    const { id } = await params;
 
     // Delete ticket only if it belongs to the authenticated user
     const deletedTicket = await db
       .delete(ticket)
-      .where(and(eq(ticket.id, params.id), eq(ticket.userId, authenticatedUser.id)))
+      .where(and(eq(ticket.id, id), eq(ticket.userId, authenticatedUser.id)))
       .returning();
 
     if (deletedTicket.length === 0) {

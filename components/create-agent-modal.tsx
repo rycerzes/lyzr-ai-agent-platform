@@ -14,7 +14,7 @@ interface CreateAgentModalProps {
 
 export function CreateAgentModal({ isOpen, onClose, apiKey, onAgentCreated }: CreateAgentModalProps) {
     const [agentType, setAgentType] = useState<"regular" | "single-task">("single-task");
-    
+
     const modelsByProvider = {
         "OpenAI": [
             "gpt-4o",
@@ -98,7 +98,7 @@ export function CreateAgentModal({ isOpen, onClose, apiKey, onAgentCreated }: Cr
         agent_role: "",
         agent_goal: "",
         agent_instructions: "",
-        examples: null,
+        examples: undefined,
         tool: "customer_support",
         tool_usage_description: "Handle customer inquiries and provide support",
         provider_id: "Perplexity",
@@ -138,7 +138,7 @@ export function CreateAgentModal({ isOpen, onClose, apiKey, onAgentCreated }: Cr
             agent_role: "",
             agent_goal: "",
             agent_instructions: "",
-            examples: null,
+            examples: undefined,
             tool: type === "single-task" ? "customer_support" : "",
             tool_usage_description: type === "single-task" ? "Handle customer inquiries and provide support" : "{}",
             provider_id: "Perplexity",
@@ -156,13 +156,13 @@ export function CreateAgentModal({ isOpen, onClose, apiKey, onAgentCreated }: Cr
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        
-        const requiredFields = agentType === "single-task" 
+
+        const requiredFields = agentType === "single-task"
             ? ["name", "description", "agent_role", "agent_instructions", "tool"]
             : ["name", "description", "agent_role"];
-            
+
         const missingFields = requiredFields.filter(field => !formData[field as keyof CreateAgentRequest]);
-        
+
         if (missingFields.length > 0) {
             setError(`${missingFields.join(", ")} ${missingFields.length === 1 ? 'is' : 'are'} required`);
             return;
@@ -178,7 +178,7 @@ export function CreateAgentModal({ isOpen, onClose, apiKey, onAgentCreated }: Cr
                     description: formData.description,
                     agent_role: formData.agent_role,
                     agent_instructions: formData.agent_instructions,
-                    examples: formData.examples as string,
+                    examples: formData.examples || "",
                     features: [{
                         type: "SINGLE_TOOL_CALL",
                         config: {},
@@ -197,7 +197,7 @@ export function CreateAgentModal({ isOpen, onClose, apiKey, onAgentCreated }: Cr
             } else {
                 await createAgent(apiKey, formData);
             }
-            
+
             onAgentCreated();
             onClose();
             // Reset form
@@ -207,7 +207,7 @@ export function CreateAgentModal({ isOpen, onClose, apiKey, onAgentCreated }: Cr
                 agent_role: "",
                 agent_goal: "",
                 agent_instructions: "",
-                examples: null,
+                examples: undefined,
                 tool: agentType === "single-task" ? "customer_support" : "",
                 tool_usage_description: agentType === "single-task" ? "Handle customer inquiries and provide support" : "{}",
                 provider_id: "Perplexity",
@@ -276,7 +276,7 @@ export function CreateAgentModal({ isOpen, onClose, apiKey, onAgentCreated }: Cr
                             </label>
                         </div>
                         <p className="text-xs text-gray-500 mt-1">
-                            {agentType === "single-task" 
+                            {agentType === "single-task"
                                 ? "Simplified template for customer support with pre-configured settings"
                                 : "Full customization with all available options"
                             }
@@ -314,7 +314,7 @@ export function CreateAgentModal({ isOpen, onClose, apiKey, onAgentCreated }: Cr
                             className="w-full min-h-[120px] p-3 border rounded-md resize-y"
                             value={formData.agent_role}
                             onChange={(e) => handleInputChange("agent_role", e.target.value)}
-                            placeholder={agentType === "single-task" 
+                            placeholder={agentType === "single-task"
                                 ? "You are a helpful customer support agent. You assist customers with their inquiries, resolve issues, and provide information about products and services."
                                 : "You are an Expert PROMPT DESIGNER tasked with optimizing user prompts for clarity and effectiveness."
                             }
@@ -436,7 +436,7 @@ export function CreateAgentModal({ isOpen, onClose, apiKey, onAgentCreated }: Cr
                         <Input
                             value={formData.tool_usage_description}
                             onChange={(e) => handleInputChange("tool_usage_description", e.target.value)}
-                            placeholder={agentType === "single-task" 
+                            placeholder={agentType === "single-task"
                                 ? "Handle customer inquiries and provide support"
                                 : "{}"
                             }

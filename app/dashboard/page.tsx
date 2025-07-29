@@ -1,6 +1,5 @@
 "use client";
 import { useState, useEffect } from "react";
-import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { getAgents, getRagConfigsByUserId } from "@/lib/lyzr-api";
 import { ApiKeyInput } from "@/components/api-input";
@@ -12,11 +11,38 @@ import { Navigation } from "@/components/navigation";
 import { authClient } from "@/lib/auth-client";
 import { Plus, Bot, Brain, Sparkles } from "lucide-react";
 
+interface User {
+    id: string;
+    name: string;
+    email: string;
+}
+
+interface Agent {
+    _id: string;
+    id?: string;
+    name: string;
+    description: string;
+    agent_role: string;
+    created_at: string;
+    updated_at: string;
+    [key: string]: unknown;
+}
+
+interface RagConfig {
+    _id: string;
+    id?: string;
+    user_id: string;
+    description?: string;
+    collection_name: string;
+    created_at: string;
+    updated_at: string;
+    [key: string]: unknown;
+}
 
 export default function DashboardPage() {
     const [apiKey, setApiKey] = useState<string | null>(null);
-    const [agents, setAgents] = useState<any[]>([]);
-    const [ragConfigs, setRagConfigs] = useState<any[]>([]);
+    const [agents, setAgents] = useState<Agent[]>([]);
+    const [ragConfigs, setRagConfigs] = useState<RagConfig[]>([]);
     const [agentsLoading, setAgentsLoading] = useState(false);
     const [ragLoading, setRagLoading] = useState(false);
     const [agentsError, setAgentsError] = useState("");
@@ -26,7 +52,7 @@ export default function DashboardPage() {
     const [noRagConfigs, setNoRagConfigs] = useState(false);
     const [showCreateAgentModal, setShowCreateAgentModal] = useState(false);
     const [showCreateRagModal, setShowCreateRagModal] = useState(false);
-    const [user, setUser] = useState<any>(null);
+    const [user, setUser] = useState<User | null>(null);
 
     useEffect(() => {
         const storedKey = typeof window !== "undefined" ? localStorage.getItem("lyzr-api-key") : null;
@@ -82,8 +108,9 @@ export default function DashboardPage() {
                     sessionStorage.setItem('lyzr-agents', JSON.stringify(agentsArray));
                 }
             }
-        } catch (err: any) {
-            setAgentsError(err.message || "Failed to fetch agents");
+        } catch (err: unknown) {
+            const errorMessage = err instanceof Error ? err.message : "Failed to fetch agents";
+            setAgentsError(errorMessage);
         } finally {
             setAgentsLoading(false);
         }
@@ -107,8 +134,9 @@ export default function DashboardPage() {
             } else {
                 setNoRagConfigs(true);
             }
-        } catch (err: any) {
-            setRagError(err.message || "Failed to fetch RAG configurations");
+        } catch (err: unknown) {
+            const errorMessage = err instanceof Error ? err.message : "Failed to fetch RAG configurations";
+            setRagError(errorMessage);
         } finally {
             setRagLoading(false);
         }
@@ -140,7 +168,7 @@ export default function DashboardPage() {
         }
     };
 
-    const handleRagConfigDeleted = (deletedConfigId: string) => {
+    const handleRagConfigDeleted = () => {
         // Simply refresh the list since we're now fetching from API
         handleRagDeleted();
     };
