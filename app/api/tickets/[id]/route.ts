@@ -45,6 +45,104 @@ async function authenticateUser(request: NextRequest) {
   return null;
 }
 
+/**
+ * @swagger
+ * /tickets/{id}:
+ *   get:
+ *     summary: Get a specific ticket by ID
+ *     description: Retrieves a specific ticket by its ID. Only returns tickets belonging to the authenticated user.
+ *     tags:
+ *       - Tickets
+ *     security:
+ *       - ApiKeyAuth: []
+ *       - ApiKeyQuery: []
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The unique identifier of the ticket
+ *         example: "abc123def456"
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved ticket
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 ticket:
+ *                   $ref: '#/components/schemas/Ticket'
+ *                 user:
+ *                   type: object
+ *                   description: User information (only included for API key authentication)
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                     name:
+ *                       type: string
+ *                     email:
+ *                       type: string
+ *             examples:
+ *               session_auth:
+ *                 summary: Session authentication response
+ *                 value:
+ *                   ticket:
+ *                     id: "abc123def456"
+ *                     title: "Login issue"
+ *                     description: "Cannot log in with valid credentials"
+ *                     email: "user@example.com"
+ *                     phone: "+1234567890"
+ *                     status: "open"
+ *                     priority: "medium"
+ *                     userId: "user123"
+ *                     createdAt: "2024-01-01T12:00:00Z"
+ *                     updatedAt: "2024-01-01T12:00:00Z"
+ *               api_key_auth:
+ *                 summary: API key authentication response
+ *                 value:
+ *                   ticket:
+ *                     id: "abc123def456"
+ *                     title: "Login issue"
+ *                     description: "Cannot log in with valid credentials"
+ *                     email: "user@example.com"
+ *                     phone: "+1234567890"
+ *                     status: "open"
+ *                     priority: "medium"
+ *                     userId: "user123"
+ *                     createdAt: "2024-01-01T12:00:00Z"
+ *                     updatedAt: "2024-01-01T12:00:00Z"
+ *                   user:
+ *                     id: "user123"
+ *                     name: "John Doe"
+ *                     email: "john@example.com"
+ *       401:
+ *         description: Unauthorized - Invalid or missing authentication
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *             example:
+ *               error: "Unauthorized"
+ *       404:
+ *         description: Ticket not found or doesn't belong to authenticated user
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *             example:
+ *               error: "Ticket not found"
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *             example:
+ *               error: "Internal server error"
+ */
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
@@ -89,6 +187,114 @@ export async function GET(
   }
 }
 
+/**
+ * @swagger
+ * /tickets/{id}:
+ *   put:
+ *     summary: Update a specific ticket by ID
+ *     description: Updates a specific ticket by its ID. Only allows updating tickets belonging to the authenticated user. All fields are optional - only provided fields will be updated.
+ *     tags:
+ *       - Tickets
+ *     security:
+ *       - ApiKeyAuth: []
+ *       - ApiKeyQuery: []
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The unique identifier of the ticket
+ *         example: "abc123def456"
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/UpdateTicketRequest'
+ *           example:
+ *             title: "Login issue - Updated"
+ *             status: "in_progress"
+ *             priority: "high"
+ *     responses:
+ *       200:
+ *         description: Ticket updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 ticket:
+ *                   $ref: '#/components/schemas/Ticket'
+ *                 user:
+ *                   type: object
+ *                   description: User information (only included for API key authentication)
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                     name:
+ *                       type: string
+ *                     email:
+ *                       type: string
+ *             examples:
+ *               session_auth:
+ *                 summary: Session authentication response
+ *                 value:
+ *                   ticket:
+ *                     id: "abc123def456"
+ *                     title: "Login issue - Updated"
+ *                     description: "Cannot log in with valid credentials"
+ *                     email: "user@example.com"
+ *                     phone: "+1234567890"
+ *                     status: "in_progress"
+ *                     priority: "high"
+ *                     userId: "user123"
+ *                     createdAt: "2024-01-01T12:00:00Z"
+ *                     updatedAt: "2024-01-01T12:30:00Z"
+ *               api_key_auth:
+ *                 summary: API key authentication response
+ *                 value:
+ *                   ticket:
+ *                     id: "abc123def456"
+ *                     title: "Login issue - Updated"
+ *                     description: "Cannot log in with valid credentials"
+ *                     email: "user@example.com"
+ *                     phone: "+1234567890"
+ *                     status: "in_progress"
+ *                     priority: "high"
+ *                     userId: "user123"
+ *                     createdAt: "2024-01-01T12:00:00Z"
+ *                     updatedAt: "2024-01-01T12:30:00Z"
+ *                   user:
+ *                     id: "user123"
+ *                     name: "John Doe"
+ *                     email: "john@example.com"
+ *       401:
+ *         description: Unauthorized - Invalid or missing authentication
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *             example:
+ *               error: "Unauthorized"
+ *       404:
+ *         description: Ticket not found or doesn't belong to authenticated user
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *             example:
+ *               error: "Ticket not found"
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *             example:
+ *               error: "Internal server error"
+ */
 export async function PUT(
   request: NextRequest,
   { params }: { params: { id: string } }
@@ -144,6 +350,86 @@ export async function PUT(
   }
 }
 
+/**
+ * @swagger
+ * /tickets/{id}:
+ *   delete:
+ *     summary: Delete a specific ticket by ID
+ *     description: Permanently deletes a specific ticket by its ID. Only allows deleting tickets belonging to the authenticated user.
+ *     tags:
+ *       - Tickets
+ *     security:
+ *       - ApiKeyAuth: []
+ *       - ApiKeyQuery: []
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The unique identifier of the ticket
+ *         example: "abc123def456"
+ *     responses:
+ *       200:
+ *         description: Ticket deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: Success message
+ *                   example: "Ticket deleted successfully"
+ *                 user:
+ *                   type: object
+ *                   description: User information (only included for API key authentication)
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                     name:
+ *                       type: string
+ *                     email:
+ *                       type: string
+ *             examples:
+ *               session_auth:
+ *                 summary: Session authentication response
+ *                 value:
+ *                   message: "Ticket deleted successfully"
+ *               api_key_auth:
+ *                 summary: API key authentication response
+ *                 value:
+ *                   message: "Ticket deleted successfully"
+ *                   user:
+ *                     id: "user123"
+ *                     name: "John Doe"
+ *                     email: "john@example.com"
+ *       401:
+ *         description: Unauthorized - Invalid or missing authentication
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *             example:
+ *               error: "Unauthorized"
+ *       404:
+ *         description: Ticket not found or doesn't belong to authenticated user
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *             example:
+ *               error: "Ticket not found"
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *             example:
+ *               error: "Internal server error"
+ */
 export async function DELETE(
   request: NextRequest,
   { params }: { params: { id: string } }
