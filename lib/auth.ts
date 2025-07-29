@@ -13,9 +13,20 @@ export const auth = betterAuth({
   plugins: [
     emailOTP({
       overrideDefaultEmailVerification: true,
+      // Generate hardcoded OTP for testing
+      generateOTP: () => {
+        if (process.env.NODE_ENV === "development") {
+          console.log("[TESTING] Generated hardcoded OTP: 123456");
+          return "123456";
+        }
+        // For production, generate a random 6-digit OTP
+        return Math.floor(100000 + Math.random() * 900000).toString();
+      },
       async sendVerificationOTP({ email, otp, type }) {
-        // TODO: Replace with your email sending logic
         console.log(`Send OTP ${otp} to ${email} for ${type}`);
+        if (process.env.NODE_ENV === "development") {
+          console.log(`[TESTING] Use this OTP to verify: ${otp}`);
+        }
       },
     }),
     admin({
