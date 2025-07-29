@@ -8,6 +8,7 @@ import { AgentCard } from "@/components/agent-card";
 import { CreateAgentModal } from "@/components/create-agent-modal";
 import { RagCard } from "@/components/rag-card";
 import { CreateRagModal } from "@/components/create-rag-modal";
+import { Navigation } from "@/components/navigation";
 
 
 export default function DashboardPage() {
@@ -125,8 +126,12 @@ export default function DashboardPage() {
     const handleRagConfigDeleted = (deletedConfigId: string) => {
         // Simply refresh the list since we're now fetching from API
         handleRagDeleted();
-    }; return (
-        <div className="flex flex-col min-h-screen p-4">
+    };
+
+    return (
+        <>
+            <Navigation />
+            <div className="flex flex-col min-h-screen p-4">
             {!apiKey ? (
                 <div className="flex items-center justify-center min-h-screen">
                     <ApiKeyInput onSetKey={setApiKey} />
@@ -246,6 +251,7 @@ export default function DashboardPage() {
                     />
                 </div>
             )}
-        </div>
+            </div>
+        </>
     );
 }
