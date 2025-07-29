@@ -182,11 +182,12 @@ export async function createSingleTaskAgent(apiKey: string, agentData: CreateSin
 }
 
 // Chat with agent
-export async function chatWithAgent(chatData: ChatRequest) {
+export async function chatWithAgent(apiKey: string, chatData: ChatRequest) {
   const res = await fetch(`${BASE_URL}/inference/chat/`, {
     method: "POST",
     headers: {
       "content-type": "application/json",
+      "x-api-key": apiKey,
     },
     body: JSON.stringify(chatData),
   });
