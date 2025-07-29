@@ -52,7 +52,7 @@ export default function AgentDetailPage() {
     const [versionsLoading, setVersionsLoading] = useState(false);
     const [showVersionHistory, setShowVersionHistory] = useState(false);
     const [versionUpdateLoading, setVersionUpdateLoading] = useState(false);
-    
+
     // RAG and Knowledge Base related state
     const [ragConfigs, setRagConfigs] = useState<any[]>([]);
     const [ragConfigsLoading, setRagConfigsLoading] = useState(false);
@@ -97,7 +97,7 @@ export default function AgentDetailPage() {
                 const agentData = await getAgentById(apiKey, agentId);
                 setAgent(agentData);
                 setError("");
-                
+
                 // Fetch RAG configurations for knowledge base features
                 await fetchRagConfigs(apiKey);
             } catch (err: any) {
@@ -284,10 +284,10 @@ export default function AgentDetailPage() {
 
         const currentFeatures = agent.features || [];
         const updatedFeatures = [...currentFeatures, newFeature];
-        
-        setEditedAgent(prev => ({ 
-            ...prev, 
-            features: updatedFeatures 
+
+        setEditedAgent(prev => ({
+            ...prev,
+            features: updatedFeatures
         }));
 
         // Update agent features
@@ -708,8 +708,8 @@ export default function AgentDetailPage() {
                         <div>
                             <span className="font-medium">Features:</span>
                             <p className="text-sm text-gray-600 mt-1">
-                                {agent.features && agent.features.length > 0 
-                                    ? agent.features.map(f => typeof f === 'string' ? f : f.type).join(', ') 
+                                {agent.features && agent.features.length > 0
+                                    ? agent.features.map(f => typeof f === 'string' ? f : f.type).join(', ')
                                     : 'No features configured'}
                             </p>
                         </div>

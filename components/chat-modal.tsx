@@ -123,7 +123,7 @@ export function ChatModal({ isOpen, onClose, agent, apiKey }: ChatModalProps) {
 
             // Show response immediately
             setIsTyping(false);
-            
+
             const agentMessage: ChatMessage = {
                 id: generateMessageId(),
                 type: 'agent',
@@ -137,7 +137,7 @@ export function ChatModal({ isOpen, onClose, agent, apiKey }: ChatModalProps) {
         } catch (error: any) {
             setIsTyping(false);
             setIsLoading(false);
-            
+
             const errorMessage: ChatMessage = {
                 id: generateMessageId(),
                 type: 'agent',
@@ -172,7 +172,7 @@ export function ChatModal({ isOpen, onClose, agent, apiKey }: ChatModalProps) {
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={handleClose}>
-            <div 
+            <div
                 className="bg-white rounded-lg shadow-xl w-full max-w-2xl h-[600px] flex flex-col"
                 onClick={(e) => e.stopPropagation()}
             >
@@ -218,15 +218,14 @@ export function ChatModal({ isOpen, onClose, agent, apiKey }: ChatModalProps) {
                             className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
                         >
                             <div
-                                className={`max-w-[80%] rounded-lg px-4 py-2 ${
-                                    message.type === 'user'
+                                className={`max-w-[80%] rounded-lg px-4 py-2 ${message.type === 'user'
                                         ? 'bg-blue-600 text-white'
                                         : 'bg-gray-100 text-gray-900'
-                                }`}
+                                    }`}
                             >
                                 {message.type === 'agent' ? (
                                     <div className="text-sm prose prose-sm max-w-none prose-headings:text-gray-900 prose-p:text-gray-900 prose-strong:text-gray-900 prose-code:text-gray-900 prose-pre:bg-gray-200 prose-pre:text-gray-900">
-                                        <ReactMarkdown 
+                                        <ReactMarkdown
                                             remarkPlugins={[remarkGfm]}
                                             components={{
                                                 // Customize code blocks
@@ -298,9 +297,8 @@ export function ChatModal({ isOpen, onClose, agent, apiKey }: ChatModalProps) {
                                     <p className="text-sm whitespace-pre-wrap">{message.message}</p>
                                 )}
                                 <p
-                                    className={`text-xs mt-1 ${
-                                        message.type === 'user' ? 'text-blue-200' : 'text-gray-500'
-                                    }`}
+                                    className={`text-xs mt-1 ${message.type === 'user' ? 'text-blue-200' : 'text-gray-500'
+                                        }`}
                                 >
                                     {formatTime(message.timestamp)}
                                 </p>
